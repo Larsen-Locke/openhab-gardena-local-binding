@@ -125,8 +125,9 @@
             <channel id="ambient-temperature" typeId="ambient-temperature"/>
             <channel id="light-intensity" typeId="light-intensity"/>
             <channel id="frost-warning" typeId="frost-warning"/>
-            <channel id="battery-level" typeId="system.battery-level"/>
+            <channel id="battery-level" typeId="battery-level"/>
             <channel id="rf-link-quality" typeId="rf-link-quality"/>
+            <channel id="last-seen" typeId="last-seen"/>
         </channels>
 
         <representation-property>deviceId</representation-property>
@@ -164,6 +165,7 @@
         <channels>
             <channel id="rf-link-quality" typeId="rf-link-quality"/>
             <channel id="signal-strength" typeId="signal-strength"/>
+            <channel id="last-seen" typeId="last-seen"/>
         </channels>
     </channel-group-type>
 
@@ -172,16 +174,17 @@
         <channels>
             <channel id="temperature" typeId="temperature"/>
             <channel id="frost-warning" typeId="frost-warning"/>
-            <channel id="battery-level" typeId="system.battery-level"/>
+            <channel id="battery-level" typeId="battery-level"/>
             <channel id="rf-link-quality" typeId="rf-link-quality"/>
             <channel id="signal-strength" typeId="signal-strength"/>
+            <channel id="last-seen" typeId="last-seen"/>
         </channels>
     </channel-group-type>
 
     <channel-type id="valve-state">
         <item-type>Switch</item-type>
         <label>Watering</label>
-        <description>ON while the valve is open. Switching it ON opens the valve for the thing's watering duration, OFF closes it.</description>
+        <description>ON while the valve is open. Switching it ON opens the valve for the valve's watering duration, OFF closes it.</description>
         <category>Water</category>
         <tags>
             <tag>Switch</tag>
@@ -191,14 +194,38 @@
 
     <channel-type id="valve-duration">
         <item-type unitHint="min">Number:Time</item-type>
-        <label>Water For</label>
-        <description>Opens the valve for the commanded duration, e.g. 15 min. 0 closes it. A plain number is taken as minutes.</description>
+        <label>Watering Duration</label>
+        <description>How long the valve stays open when switched ON, e.g. 15 min. Setting it does not open the valve. A plain number is taken as minutes. Starts at the thing's watering duration after a restart.</description>
         <category>Time</category>
         <tags>
-            <tag>Control</tag>
+            <tag>Setpoint</tag>
             <tag>Duration</tag>
         </tags>
-        <state min="0" max="600" step="1" pattern="%d min"/>
+        <state min="1" max="600" step="1" pattern="%d min"/>
+    </channel-type>
+
+    <channel-type id="battery-level">
+        <item-type unitHint="%">Number:Dimensionless</item-type>
+        <label>Battery Level</label>
+        <description>Battery charge in percent.</description>
+        <category>Battery</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Energy</tag>
+        </tags>
+        <state readOnly="true" min="0" max="100" pattern="%d %%"/>
+    </channel-type>
+
+    <channel-type id="last-seen" advanced="true">
+        <item-type>DateTime</item-type>
+        <label>Last Seen</label>
+        <description>When the device last reported anything to the gateway.</description>
+        <category>Time</category>
+        <tags>
+            <tag>Status</tag>
+            <tag>Timestamp</tag>
+        </tags>
+        <state readOnly="true"/>
     </channel-type>
 
     <channel-type id="valve-error" advanced="true">

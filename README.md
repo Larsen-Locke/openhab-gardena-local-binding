@@ -74,7 +74,7 @@ Retrying a wrong password only produces failed logins on the gateway; save the c
 | Name               | Type    | Description                                                                         | Default | Required |
 |--------------------|---------|-------------------------------------------------------------------------------------|---------|----------|
 | `deviceId`         | text    | The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.      | -       | yes      |
-| `wateringDuration` | integer | How long a valve stays open when its `state` channel is switched `ON`, in minutes (1-600). | 30      | no       |
+| `wateringDuration` | integer | How long a valve stays open when switched `ON`, in minutes (1-600), until its `duration` channel says otherwise. | 30      | no       |
 
 ### `sensor` Thing Configuration
 
@@ -93,11 +93,14 @@ Things with valves have one channel group per valve: `valve1` to `valve6` on the
 
 | Channel     | Type        | Read/Write | Things                   | Description                                                                          |
 |-------------|-------------|------------|--------------------------|--------------------------------------------------------------------------------------|
-| `state`     | Switch      | RW         | all with valves          | `ON` while the valve is open. `ON` opens it for `wateringDuration`, `OFF` closes it. |
-| `duration`  | Number:Time | W          | all with valves          | Opens the valve for the commanded duration, e.g. `15 min`. A plain number means minutes, `0` closes the valve. |
+| `state`     | Switch      | RW         | all with valves          | `ON` while the valve is open. `ON` opens it for the valve's `duration`, `OFF` closes it. |
+| `duration`  | Number:Time | RW         | all with valves          | How long the valve stays open when switched `ON`, e.g. `15 min`. A plain number means minutes. Setting it does not open the valve. |
 | `name`      | String      | R          | `irrigation-control`     | The valve name set in the GARDENA app.                                               |
 | `connected` | Switch      | R          | `irrigation-control`     | `ON` if a valve is wired to this output.                                             |
 | `error`     | Number      | R          | all with valves          | The valve's error code, `0` for none.                                                |
+
+To water for a particular time, set `duration` first and then switch `state` `ON`.
+`duration` is not persisted: after a restart every valve starts from the thing's `wateringDuration` again.
 
 Every watering run has a duration, and the device closes the valve by itself when it is over.
 A lost connection or an openHAB restart therefore never leaves the water running.
@@ -115,9 +118,10 @@ On things with valves these channels are in the `device` group; on the `sensor` 
 | `light-intensity`     | Number:Illuminance   | R          | `sensor`                                 | Light intensity in lux (smart Sensor only).                        |
 | `temperature`         | Number:Temperature   | R          | `water-control`, `dual-water-control`    | Ambient temperature at the water control, meant for frost detection. |
 | `frost-warning`       | Switch               | R          | `sensor`, `water-control`, `dual-water-control` | `ON` while the temperature is below about 5 °C (first-generation devices). |
-| `battery-level`       | Number               | R          | `sensor`, `water-control`, `dual-water-control` | Battery charge in percent.                                         |
+| `battery-level`       | Number:Dimensionless | R          | `sensor`, `water-control`, `dual-water-control` | Battery charge in percent.                                         |
 | `rf-link-quality`     | Number:Dimensionless | R          | all devices                              | Radio link quality in percent (first-generation devices).          |
 | `signal-strength`     | Number:Power         | R          | `irrigation-control`, `water-control`, `dual-water-control` | Radio signal strength in dBm (second-generation devices). |
+| `last-seen`           | DateTime             | R          | all devices                              | When the device last reported anything to the gateway.             |
 
 A value a device model does not report is never set, rather than set to `UNDEF`.
 First-generation devices report `rf-link-quality` and `frost-warning`, second-generation devices `signal-strength`.
@@ -143,7 +147,7 @@ Bridge gardenalocal:gateway:garden "GARDENA Gateway" [ host="192.168.1.20", pass
 
 ```java
 Switch               Valve1         "Rasen vorn [%s]"            { channel="gardenalocal:irrigation-control:garden:irrigation:valve1#state" }
-Number:Time          Valve1Duration "Rasen vorn bewässern für"   { channel="gardenalocal:irrigation-control:garden:irrigation:valve1#duration", unit="min" }
+Number:Time          Valve1Duration "Rasen vorn Dauer [%d min]"  { channel="gardenalocal:irrigation-control:garden:irrigation:valve1#duration", unit="min" }
 Switch               Valve2         "Beet [%s]"                  { channel="gardenalocal:irrigation-control:garden:irrigation:valve2#state" }
 Number:Dimensionless SoilMoisture   "Bodenfeuchte [%d %%]"       { channel="gardenalocal:sensor:garden:lawnSensor:soil-moisture" }
 Number:Temperature   SoilTemp       "Bodentemperatur [%.1f °C]"  { channel="gardenalocal:sensor:garden:lawnSensor:soil-temperature" }
@@ -163,6 +167,7 @@ when
 then
     if ((SoilMoisture.state as QuantityType<Dimensionless>).intValue < 25) {
         Valve1Duration.sendCommand("15 min")
+        Valve1.sendCommand(ON)
     }
 end
 ```
@@ -194,6 +199,11 @@ Remove the previous `org.openhab.binding.gardenalocal-*.jar` from `addons/` firs
 `mvn test` runs the unit tests, including one against a stand-in gateway that checks login, the device list, a valve command and reconnecting.
 
 The binding ID `gardenalocal` differs from the cloud binding's `gardena`, so both can be installed at the same time while migrating.
+
+## Migrating from the Cloud Binding
+
+The cloud binding's `commandDuration` plus `start_seconds_to_override`/`stop_until_next_task` pair maps onto `duration` plus `state`: link the duration item to `valveN#duration` and the switch item to `valveN#state`, both with the default profile.
+The cloud binding's `activity` (`CLOSED`, `MANUAL_WATERING`, `SCHEDULED_WATERING`) has no counterpart; `state` reports open or closed directly.
 
 ## Roadmap
 

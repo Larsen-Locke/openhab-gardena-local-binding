@@ -55,7 +55,7 @@ public class GardenaGatewayDiscoveryParticipant implements MDNSDiscoveryParticip
         if (thingUID == null || host == null) {
             return null;
         }
-        String name = service.getName();
+        String name = gatewayName(service);
         // No port: the announcement is not documented to carry the WebSocket service's, so the configuration
         // default (8443, where websocketd listens) applies.
         return DiscoveryResultBuilder.create(thingUID)
@@ -66,12 +66,25 @@ public class GardenaGatewayDiscoveryParticipant implements MDNSDiscoveryParticip
 
     @Override
     public @Nullable ThingUID getThingUID(ServiceInfo service) {
-        String name = service.getName();
-        if (name == null || name.isBlank()) {
-            return null;
+        String name = gatewayName(service);
+        return name.isEmpty() ? null : new ThingUID(THING_TYPE_GATEWAY, name.replaceAll("[^A-Za-z0-9_-]", "_"));
+    }
+
+    /**
+     * The gateway's own name, e.g. "GARDENA-123456". The service instance name repeats the product name in
+     * front of it ("GARDENA smart Gateway GARDENA-123456"); the host name is just the name.
+     */
+    private static String gatewayName(ServiceInfo service) {
+        String server = service.getServer();
+        if (server != null && !server.isBlank()) {
+            String host = server.endsWith(".") ? server.substring(0, server.length() - 1) : server;
+            host = host.endsWith(".local") ? host.substring(0, host.length() - ".local".length()) : host;
+            if (!host.isBlank()) {
+                return host;
+            }
         }
-        String id = name.replaceAll("[^A-Za-z0-9_-]", "_");
-        return new ThingUID(THING_TYPE_GATEWAY, id);
+        String name = service.getName();
+        return name == null ? "" : name.trim();
     }
 
     private static @Nullable String hostOf(ServiceInfo service) {

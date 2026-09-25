@@ -62,6 +62,7 @@ public class GardenaLocalBindingConstants {
     public static final String CHANNEL_VALVE_CONNECTED = "connected";
 
     // -- Device-level channel ids --
+    public static final String CHANNEL_LAST_SEEN = "last-seen";
     public static final String CHANNEL_BATTERY_LEVEL = "battery-level";
     public static final String CHANNEL_RF_LINK_QUALITY = "rf-link-quality";
     public static final String CHANNEL_SIGNAL_STRENGTH = "signal-strength";

@@ -14,6 +14,8 @@ package org.openhab.binding.gardenalocal.internal.handler;
 
 import static org.openhab.binding.gardenalocal.internal.GardenaLocalBindingConstants.*;
 
+import java.time.Instant;
+import java.time.ZoneId;
 import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
@@ -31,6 +33,7 @@ import org.openhab.binding.gardenalocal.internal.protocol.GardenaMessage;
 import org.openhab.binding.gardenalocal.internal.protocol.GardenaModel;
 import org.openhab.binding.gardenalocal.internal.protocol.GardenaModel.Family;
 import org.openhab.binding.gardenalocal.internal.protocol.GardenaRequests;
+import org.openhab.core.library.types.DateTimeType;
 import org.openhab.core.library.types.DecimalType;
 import org.openhab.core.library.types.OnOffType;
 import org.openhab.core.library.types.QuantityType;
@@ -76,6 +79,12 @@ public class GardenaDeviceHandler extends BaseThingHandler {
      */
     private final Map<String, State> lastStates = new ConcurrentHashMap<>();
 
+    /**
+     * Durations set through a valve's duration channel, in seconds. Not persisted: after a restart every valve
+     * starts from the thing's configured watering duration again.
+     */
+    private final Map<Integer, Integer> valveDurations = new ConcurrentHashMap<>();
+
     public GardenaDeviceHandler(Thing thing) {
         super(thing);
     }
@@ -104,6 +113,7 @@ public class GardenaDeviceHandler extends BaseThingHandler {
         deviceId = id;
         wateringSeconds = config.wateringDuration * 60;
         lastStates.clear();
+        valveDurations.clear();
         refreshFromGateway();
     }
 
@@ -195,22 +205,34 @@ public class GardenaDeviceHandler extends BaseThingHandler {
         switch (channelUID.getIdWithoutGroup()) {
             case CHANNEL_VALVE_STATE -> {
                 if (command instanceof OnOffType onOff) {
-                    sendValveCommand(valve, onOff == OnOffType.ON ? wateringSeconds : 0);
+                    sendValveCommand(valve, onOff == OnOffType.ON ? durationSeconds(valve) : 0);
                 }
             }
             case CHANNEL_VALVE_DURATION -> {
+                // Only remembers the duration for the next ON - it never opens the valve by itself. Rules set it
+                // right before switching ON, and an item linked with the follow profile forwards every update.
                 Integer seconds = toSeconds(command);
                 if (seconds == null) {
                     logger.debug("Ignoring command {} for {}: not a duration", command, channelUID);
-                } else if (seconds < 0 || seconds > GardenaRequests.MAX_WATERING_SECONDS) {
-                    logger.warn("Ignoring watering duration of {} s for {}: allowed are 0 to {} s", seconds,
-                            channelUID, GardenaRequests.MAX_WATERING_SECONDS);
+                } else if (seconds < 60 || seconds > GardenaRequests.MAX_WATERING_SECONDS) {
+                    logger.warn("Ignoring watering duration of {} s for {}: allowed are 1 to {} min", seconds,
+                            channelUID, MAX_WATERING_MINUTES);
                 } else {
-                    sendValveCommand(valve, seconds);
+                    valveDurations.put(valve, seconds);
+                    publish(channelUID.getId(), durationState(seconds));
                 }
             }
             default -> logger.debug("Channel {} cannot be commanded", channelUID);
         }
+    }
+
+    /** How long {@code valve} opens for on ON: its own duration if one was set, else the thing's. */
+    private int durationSeconds(int valve) {
+        return valveDurations.getOrDefault(valve, wateringSeconds);
+    }
+
+    private static State durationState(int seconds) {
+        return new QuantityType<>(seconds / 60.0, Units.MINUTE);
     }
 
     /** A quantity in any time unit, or a plain number meaning minutes. */
@@ -285,6 +307,7 @@ public class GardenaDeviceHandler extends BaseThingHandler {
         for (int valve = 1; valve <= family.getValveCount(); valve++) {
             String group = GROUP_VALVE_PREFIX + valve + ChannelUID.CHANNEL_GROUP_SEPARATOR;
             publish(group + CHANNEL_VALVE_STATE, onOff(device.isValveOpen(valve)));
+            publish(group + CHANNEL_VALVE_DURATION, durationState(durationSeconds(valve)));
             publish(group + CHANNEL_VALVE_ERROR, decimal(device.getValveError(valve)));
             if (family == Family.IRRIGATION_CONTROL) {
                 String name = device.getValveName(valve);
@@ -295,10 +318,13 @@ public class GardenaDeviceHandler extends BaseThingHandler {
         // A thing type has either channel groups or plain channels, so on things with valves the device-level
         // channels sit in a group of their own.
         String prefix = family == Family.SENSOR ? "" : GROUP_DEVICE + ChannelUID.CHANNEL_GROUP_SEPARATOR;
+        Instant lastReport = device.getLastReport();
+        publish(prefix + CHANNEL_LAST_SEEN,
+                lastReport == null ? null : new DateTimeType(lastReport.atZone(ZoneId.systemDefault())));
         publish(prefix + CHANNEL_RF_LINK_QUALITY, quantity(device.getRfLinkQuality(), Units.PERCENT));
         publish(prefix + CHANNEL_SIGNAL_STRENGTH, quantity(device.getSignalStrength(), Units.DECIBEL_MILLIWATTS));
         if (family != Family.IRRIGATION_CONTROL) {
-            publish(prefix + CHANNEL_BATTERY_LEVEL, decimal(device.getBatteryLevel()));
+            publish(prefix + CHANNEL_BATTERY_LEVEL, quantity(device.getBatteryLevel(), Units.PERCENT));
             publish(prefix + CHANNEL_FROST_WARNING, onOff(device.getFrostWarning()));
         }
         if (family == Family.SENSOR) {

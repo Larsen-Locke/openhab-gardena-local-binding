@@ -13,6 +13,7 @@
 package org.openhab.binding.gardenalocal.internal.protocol;
 
 import java.nio.charset.StandardCharsets;
+import java.time.Instant;
 import java.util.Base64;
 import java.util.List;
 import java.util.Map;
@@ -109,6 +110,32 @@ public final class GardenaDevice {
 
     public synchronized @Nullable String getHardwareVersion() {
         return GardenaJson.asString(value("device/0/hardware_version"));
+    }
+
+    /**
+     * When the device last reported anything: the newest {@code ts} anywhere in its data. Every value carries
+     * the time of its last report, so unlike a timestamp taken when an event arrives here, this is right from
+     * the first device list after an openHAB restart.
+     */
+    public synchronized @Nullable Instant getLastReport() {
+        long newest = newestTimestamp(data);
+        return newest > 0 ? Instant.ofEpochSecond(newest) : null;
+    }
+
+    private static long newestTimestamp(JsonObject object) {
+        long newest = 0;
+        for (Map.Entry<String, JsonElement> entry : object.entrySet()) {
+            JsonElement value = entry.getValue();
+            if (value.isJsonObject()) {
+                newest = Math.max(newest, newestTimestamp(value.getAsJsonObject()));
+            } else if ("ts".equals(entry.getKey())) {
+                Double ts = GardenaJson.asDouble(value);
+                if (ts != null) {
+                    newest = Math.max(newest, ts.longValue());
+                }
+            }
+        }
+        return newest;
     }
 
     // -- Valves (1-based) --

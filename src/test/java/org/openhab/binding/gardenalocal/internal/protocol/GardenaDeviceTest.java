@@ -135,6 +135,15 @@ class GardenaDeviceTest {
     }
 
     @Test
+    void lastReportIsTheNewestTimestamp() {
+        GardenaDevice device = device(SENSOR);
+        assertEquals(java.time.Instant.ofEpochSecond(1770223054), device.getLastReport());
+        device.apply(event(SENSOR, "update", "lemonbeat/0", "{\"soil_humidity\": {\"ts\": 1780000000, \"vi\": 40}}"));
+        assertEquals(java.time.Instant.ofEpochSecond(1780000000), device.getLastReport());
+        assertNull(device(WATER_CONTROL_GEN2).getLastReport(), "no timestamps in that fixture");
+    }
+
+    @Test
     void connectionStatusEvent() {
         GardenaDevice device = device(SENSOR);
         device.apply(event(SENSOR, "update", "connection_status/0", "{\"online\": {\"vb\": false}}"));
