@@ -1,0 +1,17 @@
+This content is produced and maintained by contributors to this project.
+
+* Project license: see LICENSE (Eclipse Public License 2.0), matching openHAB add-on convention.
+
+Source Code
+* https://github.com/Larsen-Locke/openhab-gardena-local-binding
+
+The GARDENA smart local API (the WebSocket service on the GARDENA smart Gateway, its message format and the
+device data paths) is documented by GARDENA's own open-source client library and Home Assistant integration:
+
+    https://github.com/cloudless-garden/gardena-smart-local-api        (LGPL-3.0-or-later, (c) 2026 GARDENA GmbH)
+    https://github.com/cloudless-garden/ha-gardena-smart-local-preview (Apache-2.0, (c) 2026 GARDENA GmbH)
+
+This binding contains no code from either project. It is an independent Java implementation of the same
+protocol, written against those projects as a reference for message shapes, resource paths and device
+behaviour. The test fixture src/test/resources/device-list.json is modelled on the structure of the
+library's test data, with values of its own.

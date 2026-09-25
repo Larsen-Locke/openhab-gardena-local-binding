@@ -1,0 +1,333 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<thing:thing-descriptions bindingId="gardenalocal"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:thing="https://openhab.org/schemas/thing-description/v1.0.0"
+    xsi:schemaLocation="https://openhab.org/schemas/thing-description/v1.0.0 https://openhab.org/schemas/thing-description-1.0.0.xsd">
+
+    <bridge-type id="gateway">
+        <label>GARDENA smart Gateway</label>
+        <description>The GARDENA smart Gateway, reached over its local WebSocket API. The WebSocket API has to be enabled once in the gateway's web interface.</description>
+        <semantic-equipment-tag>NetworkAppliance</semantic-equipment-tag>
+
+        <representation-property>host</representation-property>
+
+        <config-description>
+            <parameter name="host" type="text" required="true">
+                <context>network-address</context>
+                <label>Host</label>
+                <description>IP address or host name of the gateway, e.g. 192.168.1.20 or GARDENA-123456.local.</description>
+            </parameter>
+            <parameter name="password" type="text" required="true">
+                <context>password</context>
+                <label>Password</label>
+                <description>The first block of the gateway ID printed on the back of the gateway, e.g. 1234abcd for the ID 1234abcd-996c-48f7-83dc-d2d1bac08e7e.</description>
+            </parameter>
+            <parameter name="port" type="integer" min="1" max="65535">
+                <label>Port</label>
+                <description>Port of the gateway's WebSocket service.</description>
+                <default>8443</default>
+                <advanced>true</advanced>
+            </parameter>
+        </config-description>
+    </bridge-type>
+
+    <thing-type id="irrigation-control">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="gateway"/>
+        </supported-bridge-type-refs>
+
+        <label>GARDENA smart Irrigation Control</label>
+        <description>A smart Irrigation Control with six 24 V valve outputs.</description>
+        <semantic-equipment-tag>Irrigation</semantic-equipment-tag>
+
+        <channel-groups>
+            <channel-group id="valve1" typeId="irrigation-valve">
+                <label>Valve 1</label>
+            </channel-group>
+            <channel-group id="valve2" typeId="irrigation-valve">
+                <label>Valve 2</label>
+            </channel-group>
+            <channel-group id="valve3" typeId="irrigation-valve">
+                <label>Valve 3</label>
+            </channel-group>
+            <channel-group id="valve4" typeId="irrigation-valve">
+                <label>Valve 4</label>
+            </channel-group>
+            <channel-group id="valve5" typeId="irrigation-valve">
+                <label>Valve 5</label>
+            </channel-group>
+            <channel-group id="valve6" typeId="irrigation-valve">
+                <label>Valve 6</label>
+            </channel-group>
+            <channel-group id="device" typeId="irrigation-control-status"/>
+        </channel-groups>
+
+        <representation-property>deviceId</representation-property>
+
+        <config-description-ref uri="thing-type:gardenalocal:valve-device"/>
+    </thing-type>
+
+    <thing-type id="water-control">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="gateway"/>
+        </supported-bridge-type-refs>
+
+        <label>GARDENA smart Water Control</label>
+        <description>A smart Water Control or smart Pipeline Water Control with one valve.</description>
+        <semantic-equipment-tag>Irrigation</semantic-equipment-tag>
+
+        <channel-groups>
+            <channel-group id="valve1" typeId="valve"/>
+            <channel-group id="device" typeId="water-control-status"/>
+        </channel-groups>
+
+        <representation-property>deviceId</representation-property>
+
+        <config-description-ref uri="thing-type:gardenalocal:valve-device"/>
+    </thing-type>
+
+    <thing-type id="dual-water-control">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="gateway"/>
+        </supported-bridge-type-refs>
+
+        <label>GARDENA smart Dual Water Control</label>
+        <description>A smart Dual Water Control with two valves.</description>
+        <semantic-equipment-tag>Irrigation</semantic-equipment-tag>
+
+        <channel-groups>
+            <channel-group id="valve1" typeId="valve">
+                <label>Valve 1</label>
+            </channel-group>
+            <channel-group id="valve2" typeId="valve">
+                <label>Valve 2</label>
+            </channel-group>
+            <channel-group id="device" typeId="water-control-status"/>
+        </channel-groups>
+
+        <representation-property>deviceId</representation-property>
+
+        <config-description-ref uri="thing-type:gardenalocal:valve-device"/>
+    </thing-type>
+
+    <thing-type id="sensor">
+        <supported-bridge-type-refs>
+            <bridge-type-ref id="gateway"/>
+        </supported-bridge-type-refs>
+
+        <label>GARDENA smart Sensor</label>
+        <description>A smart Sensor or smart Sensor II. Air temperature and light intensity are only measured by the smart Sensor.</description>
+        <semantic-equipment-tag>SoilSensor</semantic-equipment-tag>
+
+        <channels>
+            <channel id="soil-moisture" typeId="soil-moisture"/>
+            <channel id="soil-temperature" typeId="soil-temperature"/>
+            <channel id="ambient-temperature" typeId="ambient-temperature"/>
+            <channel id="light-intensity" typeId="light-intensity"/>
+            <channel id="frost-warning" typeId="frost-warning"/>
+            <channel id="battery-level" typeId="system.battery-level"/>
+            <channel id="rf-link-quality" typeId="rf-link-quality"/>
+        </channels>
+
+        <representation-property>deviceId</representation-property>
+
+        <config-description>
+            <parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
+                <label>Device ID</label>
+                <description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
+            </parameter>
+        </config-description>
+    </thing-type>
+
+    <channel-group-type id="valve">
+        <label>Valve</label>
+        <channels>
+            <channel id="state" typeId="valve-state"/>
+            <channel id="duration" typeId="valve-duration"/>
+            <channel id="error" typeId="valve-error"/>
+        </channels>
+    </channel-group-type>
+
+    <channel-group-type id="irrigation-valve">
+        <label>Valve</label>
+        <channels>
+            <channel id="state" typeId="valve-state"/>
+            <channel id="duration" typeId="valve-duration"/>
+            <channel id="name" typeId="valve-name"/>
+            <channel id="connected" typeId="valve-connected"/>
+            <channel id="error" typeId="valve-error"/>
+        </channels>
+    </channel-group-type>
+
+    <channel-group-type id="irrigation-control-status">
+        <label>Device</label>
+        <channels>
+            <channel id="rf-link-quality" typeId="rf-link-quality"/>
+            <channel id="signal-strength" typeId="signal-strength"/>
+        </channels>
+    </channel-group-type>
+
+    <channel-group-type id="water-control-status">
+        <label>Device</label>
+        <channels>
+            <channel id="temperature" typeId="temperature"/>
+            <channel id="frost-warning" typeId="frost-warning"/>
+            <channel id="battery-level" typeId="system.battery-level"/>
+            <channel id="rf-link-quality" typeId="rf-link-quality"/>
+            <channel id="signal-strength" typeId="signal-strength"/>
+        </channels>
+    </channel-group-type>
+
+    <channel-type id="valve-state">
+        <item-type>Switch</item-type>
+        <label>Watering</label>
+        <description>ON while the valve is open. Switching it ON opens the valve for the thing's watering duration, OFF closes it.</description>
+        <category>Water</category>
+        <tags>
+            <tag>Switch</tag>
+            <tag>Water</tag>
+        </tags>
+    </channel-type>
+
+    <channel-type id="valve-duration">
+        <item-type unitHint="min">Number:Time</item-type>
+        <label>Water For</label>
+        <description>Opens the valve for the commanded duration, e.g. 15 min. 0 closes it. A plain number is taken as minutes.</description>
+        <category>Time</category>
+        <tags>
+            <tag>Control</tag>
+            <tag>Duration</tag>
+        </tags>
+        <state min="0" max="600" step="1" pattern="%d min"/>
+    </channel-type>
+
+    <channel-type id="valve-error" advanced="true">
+        <item-type>Number</item-type>
+        <label>Valve Error</label>
+        <description>The valve's error code as reported by the device, 0 for none.</description>
+        <tags>
+            <tag>Status</tag>
+            <tag>Info</tag>
+        </tags>
+        <state readOnly="true" pattern="%d"/>
+    </channel-type>
+
+    <channel-type id="valve-name">
+        <item-type>String</item-type>
+        <label>Valve Name</label>
+        <description>The name the valve was given in the GARDENA app.</description>
+        <tags>
+            <tag>Status</tag>
+            <tag>Info</tag>
+        </tags>
+        <state readOnly="true"/>
+    </channel-type>
+
+    <channel-type id="valve-connected" advanced="true">
+        <item-type>Switch</item-type>
+        <label>Valve Connected</label>
+        <description>ON if a valve is wired to this output.</description>
+        <tags>
+            <tag>Status</tag>
+            <tag>Info</tag>
+        </tags>
+        <state readOnly="true"/>
+    </channel-type>
+
+    <channel-type id="temperature">
+        <item-type unitHint="°C">Number:Temperature</item-type>
+        <label>Temperature</label>
+        <description>The ambient temperature measured by the water control. Meant for frost detection rather than as a thermometer.</description>
+        <category>Temperature</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Temperature</tag>
+        </tags>
+        <state readOnly="true" pattern="%.1f %unit%"/>
+    </channel-type>
+
+    <channel-type id="frost-warning">
+        <item-type>Switch</item-type>
+        <label>Frost Warning</label>
+        <description>ON while the temperature is below about 5 °C.</description>
+        <category>Temperature</category>
+        <tags>
+            <tag>Alarm</tag>
+            <tag>Temperature</tag>
+        </tags>
+        <state readOnly="true"/>
+    </channel-type>
+
+    <channel-type id="rf-link-quality" advanced="true">
+        <item-type unitHint="%">Number:Dimensionless</item-type>
+        <label>Radio Link Quality</label>
+        <description>Quality of the radio link to the gateway (first-generation devices).</description>
+        <category>QualityOfService</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>SignalStrength</tag>
+        </tags>
+        <state readOnly="true" pattern="%d %%"/>
+    </channel-type>
+
+    <channel-type id="signal-strength" advanced="true">
+        <item-type unitHint="dBm">Number:Power</item-type>
+        <label>Radio Signal Strength</label>
+        <description>Received signal strength of the radio link to the gateway (second-generation devices).</description>
+        <category>QualityOfService</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>RSSI</tag>
+        </tags>
+        <state readOnly="true" pattern="%d %unit%"/>
+    </channel-type>
+
+    <channel-type id="soil-moisture">
+        <item-type unitHint="%">Number:Dimensionless</item-type>
+        <label>Soil Moisture</label>
+        <description>The soil moisture.</description>
+        <category>Moisture</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Moisture</tag>
+        </tags>
+        <state readOnly="true" min="0" max="100" pattern="%d %%"/>
+    </channel-type>
+
+    <channel-type id="soil-temperature">
+        <item-type unitHint="°C">Number:Temperature</item-type>
+        <label>Soil Temperature</label>
+        <description>The soil temperature.</description>
+        <category>Temperature</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Temperature</tag>
+        </tags>
+        <state readOnly="true" pattern="%.1f %unit%"/>
+    </channel-type>
+
+    <channel-type id="ambient-temperature">
+        <item-type unitHint="°C">Number:Temperature</item-type>
+        <label>Air Temperature</label>
+        <description>The air temperature (smart Sensor only).</description>
+        <category>Temperature</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Temperature</tag>
+        </tags>
+        <state readOnly="true" pattern="%.1f %unit%"/>
+    </channel-type>
+
+    <channel-type id="light-intensity">
+        <item-type unitHint="lx">Number:Illuminance</item-type>
+        <label>Light Intensity</label>
+        <description>The light intensity (smart Sensor only).</description>
+        <category>Sun</category>
+        <tags>
+            <tag>Measurement</tag>
+            <tag>Illuminance</tag>
+        </tags>
+        <state readOnly="true" pattern="%d %unit%"/>
+    </channel-type>
+
+</thing:thing-descriptions>

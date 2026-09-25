@@ -1,0 +1,100 @@
+[
+  {
+    "entity": { "path": "devices", "service": "lemonbeatd" },
+    "metadata": { "sequence": 3500, "source": "lemonbeatd" },
+    "payload": {
+      "3034F8EE90126D400001737D": {
+        "connection_status": { "0": { "online": { "ts": 1761915305, "vb": true } }, "_urn": "urn:oma:lwm2m:x:28171" },
+        "device": {
+          "0": {
+            "device_type": { "ts": 1769328850, "vs": "Irrigation Control" },
+            "firmware_version": { "ts": 1769328850, "vs": "4.0.0-1.6.1" },
+            "hardware_version": { "ts": 1769328850, "vs": "0.3.5" },
+            "manufacturer": { "ts": 1769328850, "vs": "Gardena" },
+            "model_number": { "ts": 1769328850, "vs": "31653" },
+            "serial_number": { "ts": 1769328850, "vs": "00095101" },
+            "software_version": { "ts": 1769328850, "vs": "2.5.0" }
+          },
+          "_urn": "urn:oma:lwm2m:oma:3:1.1"
+        },
+        "lemonbeat": {
+          "0": {
+            "rf_link_quality": { "ts": 1770161548, "vi": 80 },
+            "valves_connected": { "ts": 1769328850, "vi": 14 },
+            "valve_name_1": { "ts": 1769328850, "vo": "UmFzZW4gdm9ybgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==" },
+            "valve_error_1": { "ts": 1769328850, "vi": 0 },
+            "valve_error_2": { "ts": 1769328850, "vi": 2 },
+            "watering_timer_1": { "ts": 1769328850, "vi": 0 },
+            "watering_timer_2": { "ts": 1769328850, "vi": 1200 },
+            "watering_timer_3": { "ts": 1769328850, "vi": 0 }
+          },
+          "_urn": "urn:oma:lwm2m:x:31000"
+        }
+      },
+      "3034F8EE901267400000B333": {
+        "connection_status": { "0": { "online": { "ts": 1768826098, "vb": true } }, "_urn": "urn:oma:lwm2m:x:28171" },
+        "device": {
+          "0": {
+            "model_number": { "ts": 1769328781, "vs": "18845" },
+            "serial_number": { "ts": 1769328781, "vs": "00045875" },
+            "software_version": { "ts": 1769328781, "vs": "2.4.1" }
+          },
+          "_urn": "urn:oma:lwm2m:oma:3:1.1"
+        },
+        "lemonbeat": {
+          "0": {
+            "ambient_temperature": { "ts": 1770223054, "vi": 18 },
+            "battery_level": { "ts": 1770214801, "vi": 57 },
+            "frost_warning": { "ts": 1769180103, "vi": 0 },
+            "light": { "ts": 1770223054, "vi": 1200 },
+            "rf_link_quality": { "ts": 1770214799, "vi": 100 },
+            "soil_humidity": { "ts": 1770222703, "vi": 34 },
+            "soil_temperature": { "ts": 1770222703, "vi": 15 }
+          },
+          "_urn": "urn:oma:lwm2m:x:31000"
+        }
+      },
+      "3034F8EE902273C000009390": {
+        "connection_status": { "0": { "online": { "ts": 1769328752, "vb": true } } },
+        "device": { "0": { "model_number": { "ts": 1769328752, "vs": "35279" } } }
+      }
+    },
+    "request_id": "2a8166c5-d60f-4ddd-8735-29aa3661a128",
+    "success": true
+  },
+  {
+    "entity": { "path": "devices", "service": "lwm2mserver" },
+    "payload": {
+      "3034F8319C02BF00000033FF": {
+        "connection_status": { "0": { "online": { "vb": true } } },
+        "device": {
+          "0": {
+            "model_number": { "vs": "2812" },
+            "serial_number": { "vs": "00112233" },
+            "battery_level": { "vi": 91 }
+          }
+        },
+        "actuator": {
+          "0": {
+            "name": { "vs": "Hochbeet" },
+            "available": { "vb": true },
+            "error": { "vi": 0 },
+            "state": { "vi": 0 }
+          },
+          "_urn": "urn:oma:lwm2m:x:28100"
+        },
+        "timeslot": {
+          "7": {
+            "actuator": { "vi": 0 },
+            "state": { "vi": 1 }
+          },
+          "_urn": "urn:oma:lwm2m:x:28101"
+        },
+        "temperature": { "0": { "sensor_value": { "vf": 21.5 } } },
+        "connectivity_monitoring": { "0": { "radio_signal_strength": { "vi": -73 }, "link_quality": { "vi": 2 } } }
+      }
+    },
+    "request_id": "5f0d1f0e-9c3e-4d38-9a5a-1f3f8c2b7e11",
+    "success": true
+  }
+]
