@@ -20,6 +20,9 @@ It is switched off on the gateway by default; see [Preparing the Gateway](#prepa
 Mowers, the smart Pump and the smart Power Adapter are reported by the gateway as well, but are not supported yet.
 They are simply not offered in the Inbox.
 
+Verified on real hardware so far: a first-generation smart Irrigation Control (19032) and a smart Sensor II (19040) on openHAB 5.2.1.
+The water controls and second-generation devices follow GARDENA's reference implementation but have not been run against real hardware yet.
+
 ## Preparing the Gateway
 
 The WebSocket service on the gateway has to be enabled once:
