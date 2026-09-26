@@ -31,4 +31,7 @@ public class GardenaGatewayConfiguration {
 
     /** The first eight characters of the gateway id printed on the back of the gateway. */
     public String password = "";
+
+    /** How often the device list is read again, in minutes; 0 turns it off. */
+    public int refreshInterval = 10;
 }

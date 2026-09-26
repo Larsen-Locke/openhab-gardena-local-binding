@@ -92,6 +92,7 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
     private volatile @Nullable DeviceListListener deviceListListener;
     private final Map<String, GardenaDevice> devices = new ConcurrentHashMap<>();
     private @Nullable ScheduledFuture<?> deviceListJob;
+    private volatile @Nullable ScheduledFuture<?> refreshJob;
 
     public GardenaGatewayHandler(Bridge bridge, WebSocketFactory webSocketFactory) {
         super(bridge);
@@ -122,6 +123,11 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
                     "@text/offline.conf-error.invalid-port");
             return;
         }
+        if (config.refreshInterval < 0) {
+            updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
+                    "@text/offline.conf-error.invalid-refresh-interval");
+            return;
+        }
         URI uri;
         try {
             uri = new URI("wss", null, host, config.port, "/", null, null);
@@ -150,10 +156,23 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
         GardenaConnection newConnection = new GardenaConnection(client, uri, authorization, this, scheduler);
         connection = newConnection;
         newConnection.start();
+
+        // The gateway pushes an event only when a value changes. A device reporting the same values again - a
+        // sensor in steady weather, an idle irrigation control - refreshes only the timestamps kept on the
+        // gateway, so without re-reading the list "last seen" would stay at the last change, hours or days old.
+        if (config.refreshInterval > 0) {
+            refreshJob = scheduler.scheduleWithFixedDelay(() -> requestDeviceList(false), config.refreshInterval,
+                    config.refreshInterval, TimeUnit.MINUTES);
+        }
     }
 
     @Override
     public void dispose() {
+        ScheduledFuture<?> refresh = refreshJob;
+        if (refresh != null) {
+            refresh.cancel(false);
+        }
+        refreshJob = null;
         synchronized (this) {
             ScheduledFuture<?> job = deviceListJob;
             if (job != null) {

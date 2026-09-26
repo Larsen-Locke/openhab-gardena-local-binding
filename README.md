@@ -64,6 +64,11 @@ Devices are paired with the gateway in the GARDENA app, as before.
 | `host`     | text    | IP address or host name of the gateway.                                         | -       | yes      | no       |
 | `password` | text    | The first block of the gateway ID printed on the back of the gateway.           | -       | yes      | no       |
 | `port`     | integer | Port of the gateway's WebSocket service.                                        | 8443    | no       | yes      |
+| `refreshInterval` | integer | How often the device list is read again, in minutes; `0` turns it off.   | 10      | no       | yes      |
+
+The gateway pushes an event only when a value changes.
+A device that reports the same values again only refreshes timestamps on the gateway, so the binding reads the whole device list every `refreshInterval` minutes to keep `last-seen` current.
+The request is a few kilobytes and answered within a fraction of a second.
 
 The gateway uses a self-signed certificate that does not match its IP address, so the binding does not verify the certificate.
 The password authenticates openHAB to the gateway; nothing authenticates the gateway to openHAB.

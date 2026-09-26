@@ -28,6 +28,12 @@
                 <default>8443</default>
                 <advanced>true</advanced>
             </parameter>
+            <parameter name="refreshInterval" type="integer" min="0" max="1440" unit="min">
+                <label>Refresh Interval</label>
+                <description>How often the device list is read again, in minutes. The gateway only reports changed values on its own, so this keeps Last Seen current. 0 turns it off.</description>
+                <default>10</default>
+                <advanced>true</advanced>
+            </parameter>
         </config-description>
     </bridge-type>
 
@@ -216,7 +222,7 @@
         <state readOnly="true" min="0" max="100" pattern="%d %%"/>
     </channel-type>
 
-    <channel-type id="last-seen" advanced="true">
+    <channel-type id="last-seen">
         <item-type>DateTime</item-type>
         <label>Last Seen</label>
         <description>When the device last reported anything to the gateway.</description>
