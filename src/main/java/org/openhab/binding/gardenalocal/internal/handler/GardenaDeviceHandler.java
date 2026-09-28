@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -103,8 +103,8 @@ public class GardenaDeviceHandler extends BaseThingHandler {
                     "@text/offline.conf-error.invalid-device-id");
             return;
         }
-        if (hasValves() && (config.wateringDuration < MIN_WATERING_MINUTES
-                || config.wateringDuration > MAX_WATERING_MINUTES)) {
+        if (hasValves()
+                && (config.wateringDuration < MIN_WATERING_MINUTES || config.wateringDuration > MAX_WATERING_MINUTES)) {
             updateStatus(ThingStatus.OFFLINE, ThingStatusDetail.CONFIGURATION_ERROR,
                     "@text/offline.conf-error.invalid-watering-duration [\"" + MIN_WATERING_MINUTES + "\", \""
                             + MAX_WATERING_MINUTES + "\"]");
@@ -268,8 +268,7 @@ public class GardenaDeviceHandler extends BaseThingHandler {
         logger.debug("Sending '{}' to {}", action, device);
         gateway.send(frame).whenComplete((replies, error) -> {
             if (error != null) {
-                Throwable cause = error instanceof CompletionException && error.getCause() != null
-                        ? error.getCause()
+                Throwable cause = error instanceof CompletionException && error.getCause() != null ? error.getCause()
                         : error;
                 logger.warn("Could not {} of {}: {}", action, getThing().getUID(),
                         cause.getMessage() == null ? cause.getClass().getSimpleName() : cause.getMessage());

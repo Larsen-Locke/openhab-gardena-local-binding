@@ -1,19 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <config-description:config-descriptions
-    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-    xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
-    xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0 https://openhab.org/schemas/config-description-1.0.0.xsd">
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:config-description="https://openhab.org/schemas/config-description/v1.0.0"
+	xsi:schemaLocation="https://openhab.org/schemas/config-description/v1.0.0 https://openhab.org/schemas/config-description-1.0.0.xsd">
 
-    <config-description uri="thing-type:gardenalocal:valve-device">
-        <parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
-            <label>Device ID</label>
-            <description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
-        </parameter>
-        <parameter name="wateringDuration" type="integer" min="1" max="600" unit="min">
-            <label>Watering Duration</label>
-            <description>How long a valve stays open when switched ON, in minutes, until its Watering Duration channel is set to something else. The device closes the valve by itself when the time is up.</description>
-            <default>30</default>
-        </parameter>
-    </config-description>
+	<config-description uri="thing-type:gardenalocal:valve-device">
+		<parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
+			<label>Device ID</label>
+			<description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
+		</parameter>
+		<parameter name="wateringDuration" type="integer" min="1" max="600" unit="min">
+			<label>Watering Duration</label>
+			<description>How long a valve stays open when switched ON, in minutes, until its Watering Duration channel is set to
+				something else. The device closes the valve by itself when the time is up.</description>
+			<default>30</default>
+		</parameter>
+	</config-description>
 
 </config-description:config-descriptions>

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -222,8 +222,7 @@ public final class GardenaDevice {
 
     /** Radio link quality in percent, Gen1 only. */
     public synchronized @Nullable Double getRfLinkQuality() {
-        return model.getGeneration() == Generation.GEN1 ? GardenaJson.asDouble(value(GEN1 + "rf_link_quality"))
-                : null;
+        return model.getGeneration() == Generation.GEN1 ? GardenaJson.asDouble(value(GEN1 + "rf_link_quality")) : null;
     }
 
     /** Received radio signal strength in dBm, Gen2 only. */
@@ -235,8 +234,7 @@ public final class GardenaDevice {
 
     /** Frost warning (temperature below about 5 °C), Gen1 only. */
     public synchronized @Nullable Boolean getFrostWarning() {
-        Double warning = model.getGeneration() == Generation.GEN1
-                ? GardenaJson.asDouble(value(GEN1 + "frost_warning"))
+        Double warning = model.getGeneration() == Generation.GEN1 ? GardenaJson.asDouble(value(GEN1 + "frost_warning"))
                 : null;
         return warning == null ? null : warning != 0;
     }
@@ -246,8 +244,8 @@ public final class GardenaDevice {
      * it every half hour or on a change of more than 2 °C.
      */
     public synchronized @Nullable Double getTemperature() {
-        return GardenaJson.asDouble(value(
-                model.getGeneration() == Generation.GEN1 ? GEN1 + "ambient_temperature" : "temperature/0/sensor_value"));
+        return GardenaJson.asDouble(value(model.getGeneration() == Generation.GEN1 ? GEN1 + "ambient_temperature"
+                : "temperature/0/sensor_value"));
     }
 
     // -- Sensor values --

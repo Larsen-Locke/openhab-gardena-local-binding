@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -72,7 +72,9 @@ import com.google.gson.JsonElement;
 @NonNullByDefault
 public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaConnection.Listener {
 
-    /** Receives the device list whenever the gateway reports it. Implemented for {@link GardenaDeviceDiscoveryService}. */
+    /**
+     * Receives the device list whenever the gateway reports it. Implemented for {@link GardenaDeviceDiscoveryService}.
+     */
     public interface DeviceListListener {
         void onDeviceList(Collection<GardenaDevice> devices);
     }
@@ -259,6 +261,8 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
                 "@text/offline.conf-error.password-rejected");
     }
 
+    // Identity on purpose: a reply is only acted on if its connection is still the current one.
+    @SuppressWarnings("PMD.CompareObjectsWithEquals")
     private void requestDeviceList(boolean afterConnect) {
         GardenaConnection currentConnection = connection;
         if (currentConnection == null || !currentConnection.isConnected()) {

@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -49,8 +49,7 @@ class GardenaDeviceTest {
         devices = new HashMap<>();
         for (GardenaMessage reply : GardenaMessage.parseFrame(resource("device-list.json"))) {
             for (Map.Entry<String, JsonElement> entry : reply.getPayload().entrySet()) {
-                GardenaDevice device = GardenaDevice.fromDiscovery(entry.getKey(),
-                        entry.getValue().getAsJsonObject());
+                GardenaDevice device = GardenaDevice.fromDiscovery(entry.getKey(), entry.getValue().getAsJsonObject());
                 if (device != null) {
                     devices.put(device.getId(), device);
                 }

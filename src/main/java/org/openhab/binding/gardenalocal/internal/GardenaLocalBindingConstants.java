@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -31,10 +31,8 @@ public class GardenaLocalBindingConstants {
     // -- Thing type UIDs --
     public static final ThingTypeUID THING_TYPE_GATEWAY = new ThingTypeUID(BINDING_ID, "gateway");
     public static final ThingTypeUID THING_TYPE_WATER_CONTROL = thingType(GardenaModel.Family.WATER_CONTROL);
-    public static final ThingTypeUID THING_TYPE_DUAL_WATER_CONTROL = thingType(
-            GardenaModel.Family.DUAL_WATER_CONTROL);
-    public static final ThingTypeUID THING_TYPE_IRRIGATION_CONTROL = thingType(
-            GardenaModel.Family.IRRIGATION_CONTROL);
+    public static final ThingTypeUID THING_TYPE_DUAL_WATER_CONTROL = thingType(GardenaModel.Family.DUAL_WATER_CONTROL);
+    public static final ThingTypeUID THING_TYPE_IRRIGATION_CONTROL = thingType(GardenaModel.Family.IRRIGATION_CONTROL);
     public static final ThingTypeUID THING_TYPE_SENSOR = thingType(GardenaModel.Family.SENSOR);
 
     public static final Set<ThingTypeUID> DEVICE_THING_TYPES = Set.of(THING_TYPE_WATER_CONTROL,

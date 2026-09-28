@@ -204,6 +204,9 @@ Adjust `openhab.core.version` in `pom.xml` to match the openHAB version you are 
 Drop the resulting `target/org.openhab.binding.gardenalocal-*.jar` into your openHAB `addons/` folder.
 Remove the previous `org.openhab.binding.gardenalocal-*.jar` from `addons/` first, otherwise openHAB loads two versions side by side.
 
+`mvn verify` also runs the checks openHAB applies to its official add-ons: Spotless for the code style (`mvn spotless:apply` fixes it) and the static code analysis (Checkstyle, PMD, SpotBugs), whose report ends up in `target/code-analysis/report.html`.
+`checkstyle.properties` holds the rule parameters openhab-addons uses.
+
 `mvn test` runs the unit tests, including one against a stand-in gateway that checks login, the device list, a valve command and reconnecting.
 
 The binding ID `gardenalocal` differs from the cloud binding's `gardena`, so both can be installed at the same time while migrating.

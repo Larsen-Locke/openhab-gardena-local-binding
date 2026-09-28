@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -52,6 +52,8 @@ import org.slf4j.LoggerFactory;
  * @author Carsten Mogge - Initial contribution
  */
 @NonNullByDefault
+// Sockets are compared by identity on purpose: the question is always "is this still the current attempt?"
+@SuppressWarnings("PMD.CompareObjectsWithEquals")
 public class GardenaConnection {
 
     /** Receives what happens on the connection. Called from the WebSocket's own threads. */
@@ -286,8 +288,8 @@ public class GardenaConnection {
             return;
         }
         if (System.nanoTime() - lastReceivedNanos > STALE_AFTER_NANOS) {
-            connectionLost(socket, "no data from the gateway for "
-                    + TimeUnit.NANOSECONDS.toSeconds(STALE_AFTER_NANOS) + " s");
+            connectionLost(socket,
+                    "no data from the gateway for " + TimeUnit.NANOSECONDS.toSeconds(STALE_AFTER_NANOS) + " s");
             return;
         }
         try {

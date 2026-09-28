@@ -28,6 +28,11 @@
     <gson.version>2.13.2</gson.version>
     <jmdns.version>3.6.3</jmdns.version>
     <bnd.version>6.4.0</bnd.version>
+    <!-- openHAB's code checks, the same as for the official add-ons (openhab-addons) -->
+    <sat.version>0.18.0</sat.version>
+    <spotless.version>2.44.3</spotless.version>
+    <spotless.eclipse.version>4.25</spotless.eclipse.version>
+    <spotless.eclipse.wtp.version>4.21.0</spotless.eclipse.wtp.version>
 
     <!-- Colon-free so it's safe in a Windows filename; used in <finalName> below so every local build
          produces a distinctly-named jar under target/ instead of always overwriting the same file name. -->
@@ -50,6 +55,20 @@
       </snapshots>
     </repository>
   </repositories>
+
+  <pluginRepositories>
+    <pluginRepository>
+      <id>openhab-artifactory-release</id>
+      <name>openHAB Release Repository</name>
+      <url>https://openhab.jfrog.io/artifactory/libs-release</url>
+      <releases>
+        <enabled>true</enabled>
+      </releases>
+      <snapshots>
+        <enabled>false</enabled>
+      </snapshots>
+    </pluginRepository>
+  </pluginRepositories>
 
   <dependencies>
     <dependency>
@@ -184,6 +203,82 @@
             <goals>
               <goal>bnd-process</goal>
             </goals>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Code formatting as required for openHAB add-ons; "mvn spotless:apply" fixes it -->
+        <groupId>com.diffplug.spotless</groupId>
+        <artifactId>spotless-maven-plugin</artifactId>
+        <version>${spotless.version}</version>
+        <configuration>
+          <java>
+            <eclipse>
+              <file>openhab_codestyle.xml</file>
+              <version>${spotless.eclipse.version}</version>
+            </eclipse>
+            <removeUnusedImports/>
+            <importOrder>
+              <file>openhab.importorder</file>
+            </importOrder>
+            <endWithNewline/>
+          </java>
+          <formats>
+            <format>
+              <includes>
+                <include>src/**/*.xml</include>
+              </includes>
+              <excludes>
+                <exclude>src/test/resources/**/*.xml</exclude>
+              </excludes>
+              <eclipseWtp>
+                <type>XML</type>
+                <files>
+                  <file>openhab_wst_xml_files.prefs</file>
+                </files>
+                <version>${spotless.eclipse.wtp.version}</version>
+              </eclipseWtp>
+              <trimTrailingWhitespace/>
+              <endWithNewline/>
+            </format>
+          </formats>
+        </configuration>
+        <dependencies>
+          <dependency>
+            <groupId>org.openhab.tools</groupId>
+            <artifactId>openhab-codestyle</artifactId>
+            <version>${sat.version}</version>
+          </dependency>
+        </dependencies>
+        <executions>
+          <execution>
+            <id>codestyle_check</id>
+            <goals>
+              <goal>check</goal>
+            </goals>
+            <phase>initialize</phase>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <!-- Static code analysis (Checkstyle, PMD, SpotBugs) with openHAB's add-on rules -->
+        <groupId>org.openhab.tools.sat</groupId>
+        <artifactId>sat-plugin</artifactId>
+        <version>${sat.version}</version>
+        <configuration>
+          <!-- The rule parameters openhab-addons uses (tools/static-code-analysis/checkstyle/ruleset.properties) -->
+          <checkstyleProperties>${project.basedir}/checkstyle.properties</checkstyleProperties>
+        </configuration>
+        <executions>
+          <execution>
+            <id>sat-all</id>
+            <goals>
+              <goal>checkstyle</goal>
+              <goal>pmd</goal>
+              <goal>spotbugs</goal>
+              <goal>report</goal>
+            </goals>
+            <phase>verify</phase>
           </execution>
         </executions>
       </plugin>

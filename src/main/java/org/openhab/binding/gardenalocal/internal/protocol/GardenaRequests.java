@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -80,8 +80,7 @@ public final class GardenaRequests {
     private static JsonObject writeWateringTimer(String deviceId, int valve, int seconds) {
         JsonObject payload = new JsonObject();
         payload.addProperty("vi", seconds);
-        return request(Generation.GEN1.getService(), deviceId, "lemonbeat/0/watering_timer_" + valve, "write",
-                payload);
+        return request(Generation.GEN1.getService(), deviceId, "lemonbeat/0/watering_timer_" + valve, "write", payload);
     }
 
     /**

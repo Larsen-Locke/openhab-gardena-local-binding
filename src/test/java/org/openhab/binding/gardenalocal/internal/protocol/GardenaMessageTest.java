@@ -1,4 +1,4 @@
-/**
+/*
  * Copyright (c) 2010-2026 Contributors to the openHAB project
  *
  * See the NOTICE file(s) distributed with this work for additional
@@ -85,8 +85,7 @@ class GardenaMessageTest {
 
     @Test
     void deletePrunesEmptyParents() {
-        JsonObject data = JsonParser.parseString("{\"t\": {\"1\": {\"s\": {\"vi\": 1}}}, \"k\": {}}")
-                .getAsJsonObject();
+        JsonObject data = JsonParser.parseString("{\"t\": {\"1\": {\"s\": {\"vi\": 1}}}, \"k\": {}}").getAsJsonObject();
         GardenaJson.delete(data, GardenaJson.segments("t/1/s"));
         assertFalse(data.has("t"));
         assertTrue(data.has("k"), "unrelated empty objects are left alone");
