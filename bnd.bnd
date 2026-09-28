@@ -9,3 +9,5 @@ Private-Package: \
 -dsannotations: *
 -metatypeannotations: *
 -sources: true
+# The license notices ship inside the jar, as with the official add-ons
+-includeresource: NOTICE

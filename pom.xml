@@ -10,11 +10,7 @@
   <packaging>jar</packaging>
 
   <name>openHAB Add-ons :: Bundles :: GARDENA smart local Binding</name>
-  <description>
-    openHAB binding for GARDENA smart system devices (irrigation control, water controls, sensors), talking to the
-    GARDENA smart Gateway over its local WebSocket API instead of the GARDENA cloud. The message format follows
-    GARDENA's own gardena-smart-local-api library, https://github.com/cloudless-garden/gardena-smart-local-api.
-  </description>
+  <description>openHAB binding for GARDENA smart system devices (irrigation control, water controls, sensors), talking to the GARDENA smart Gateway over its local WebSocket API instead of the GARDENA cloud. The message format follows GARDENA's own gardena-smart-local-api library, https://github.com/cloudless-garden/gardena-smart-local-api.</description>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -266,8 +262,10 @@
         <artifactId>sat-plugin</artifactId>
         <version>${sat.version}</version>
         <configuration>
-          <!-- The rule parameters openhab-addons uses (tools/static-code-analysis/checkstyle/ruleset.properties) -->
-          <checkstyleProperties>${project.basedir}/checkstyle.properties</checkstyleProperties>
+          <!-- The rule parameters and general suppressions of openhab-addons, see sat/ -->
+          <checkstyleProperties>${project.basedir}/sat/checkstyle.properties</checkstyleProperties>
+          <checkstyleFilter>${project.basedir}/sat/checkstyle-suppressions.xml</checkstyleFilter>
+          <spotbugsExclude>${project.basedir}/sat/spotbugs-suppressions.xml</spotbugsExclude>
         </configuration>
         <executions>
           <execution>
