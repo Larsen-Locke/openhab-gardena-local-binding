@@ -12,6 +12,8 @@
  */
 package org.openhab.binding.gardenalocal.internal.handler;
 
+import static org.openhab.binding.gardenalocal.internal.GardenaLocalBindingConstants.CONFIG_DEVICE_ID;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -204,6 +206,20 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
     /** The device with this id as last reported, or null if the gateway does not know it. */
     public @Nullable GardenaDevice getDevice(String deviceId) {
         return devices.get(deviceId);
+    }
+
+    /**
+     * Whether a thing under this gateway is configured for the device, judged by its configuration: a thing's
+     * configuration exists the moment it is created, before its handler has read it.
+     */
+    public boolean hasThingFor(String deviceId) {
+        for (Thing child : getThing().getThings()) {
+            if (child.getConfiguration().get(CONFIG_DEVICE_ID) instanceof String configured
+                    && deviceId.equalsIgnoreCase(configured.trim())) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /** Asks the gateway for its device list again, e.g. for a discovery scan. */

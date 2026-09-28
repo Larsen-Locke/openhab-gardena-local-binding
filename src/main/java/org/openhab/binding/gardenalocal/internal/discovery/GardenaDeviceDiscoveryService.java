@@ -14,8 +14,10 @@ package org.openhab.binding.gardenalocal.internal.discovery;
 
 import static org.openhab.binding.gardenalocal.internal.GardenaLocalBindingConstants.*;
 
-import java.time.Instant;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.binding.gardenalocal.internal.handler.GardenaGatewayHandler;
@@ -49,6 +51,8 @@ public class GardenaDeviceDiscoveryService extends AbstractThingHandlerDiscovery
 
     private final GardenaGatewayHandler.DeviceListListener listener = this::onDeviceList;
     private volatile boolean scanning;
+    /** What the last device list proposed, to withdraw devices that have since been unpaired. */
+    private final Set<ThingUID> proposed = ConcurrentHashMap.newKeySet();
 
     public GardenaDeviceDiscoveryService() {
         super(GardenaGatewayHandler.class, DEVICE_THING_TYPES, SCAN_TIMEOUT_SECONDS, true);
@@ -89,13 +93,21 @@ public class GardenaDeviceDiscoveryService extends AbstractThingHandlerDiscovery
         if (!scanning && !isBackgroundDiscoveryEnabled()) {
             return;
         }
-        Instant listTime = Instant.now();
         ThingUID bridgeUID = thingHandler.getThing().getUID();
+        Set<ThingUID> current = new HashSet<>();
         for (GardenaDevice device : devices) {
             ThingTypeUID thingTypeUID = new ThingTypeUID(BINDING_ID, device.getModel().getFamily().getThingTypeId());
+            ThingUID thingUID = new ThingUID(thingTypeUID, bridgeUID, device.getId());
+            if (thingHandler.hasThingFor(device.getId())) {
+                // Proposing a device that already has a thing only gets the proposal auto-ignored, and with the
+                // device list re-read every few minutes the Inbox then added and dropped it in turn. Any
+                // proposal still there from before the thing was created goes as well.
+                thingRemoved(thingUID);
+                continue;
+            }
+            current.add(thingUID);
             String serialNumber = device.getSerialNumber();
-            DiscoveryResultBuilder builder = DiscoveryResultBuilder
-                    .create(new ThingUID(thingTypeUID, bridgeUID, device.getId())).withBridge(bridgeUID)
+            DiscoveryResultBuilder builder = DiscoveryResultBuilder.create(thingUID).withBridge(bridgeUID)
                     .withLabel("@text/discovery.gardenalocal.device.label [\"" + device.getModel().getProductName()
                             + "\", \"" + (serialNumber == null ? device.getId() : serialNumber) + "\"]")
                     .withProperty(CONFIG_DEVICE_ID, device.getId())
@@ -107,7 +119,14 @@ public class GardenaDeviceDiscoveryService extends AbstractThingHandlerDiscovery
             DiscoveryResult result = builder.build();
             thingDiscovered(result);
         }
-        // Devices unpaired from the gateway since the last list.
-        removeOlderResults(listTime, bridgeUID);
+        // Devices unpaired from the gateway since the last list. Withdrawn by id rather than by result age: on the
+        // real gateway an age cut-off also dropped results the Inbox already held, whose timestamps it had kept.
+        for (ThingUID thingUID : proposed) {
+            if (!current.contains(thingUID)) {
+                thingRemoved(thingUID);
+            }
+        }
+        proposed.clear();
+        proposed.addAll(current);
     }
 }
