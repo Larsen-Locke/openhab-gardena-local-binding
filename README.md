@@ -50,8 +50,8 @@ The GARDENA app and cloud keep working alongside the local API.
 The gateway announces itself via mDNS (`_gardena-smart._tcp`) and shows up in the Inbox.
 Only the password has to be added after approving it.
 
-Once the gateway is online, every supported device paired with it is proposed in the Inbox.
-Newly paired devices appear as soon as the gateway reports them; "Scan" on the gateway fetches the device list again.
+Devices are proposed only while a scan is running: press "Scan" for the GARDENA smart local binding in the Inbox once the gateway is online.
+Every supported device paired with the gateway that has no thing yet is proposed.
 
 Devices are paired with the gateway in the GARDENA app, as before.
 

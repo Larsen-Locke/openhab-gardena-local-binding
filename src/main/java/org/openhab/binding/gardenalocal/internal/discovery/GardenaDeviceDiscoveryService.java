@@ -32,9 +32,13 @@ import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
- * Proposes every supported device paired with the gateway. There is nothing to search for: the gateway's device
- * list is exact, so a scan fetches it again and every device on it is proposed, while background discovery
- * proposes from each device list the gateway handler receives anyway (on connect, and when a device is paired).
+ * Proposes every supported device paired with the gateway that has no thing yet. There is nothing to search for:
+ * the gateway's device list is exact, so a scan fetches it again and proposes what is on it.
+ *
+ * <p>
+ * Only while a scan started from the UI is running. Background discovery is off by default: the gateway handler
+ * re-reads the device list every few minutes, and proposing from each of those would keep the Inbox busy for
+ * devices set up long ago.
  *
  * <p>
  * This class deliberately does not implement {@link GardenaGatewayHandler.DeviceListListener}: openHAB registers
@@ -55,7 +59,7 @@ public class GardenaDeviceDiscoveryService extends AbstractThingHandlerDiscovery
     private final Set<ThingUID> proposed = ConcurrentHashMap.newKeySet();
 
     public GardenaDeviceDiscoveryService() {
-        super(GardenaGatewayHandler.class, DEVICE_THING_TYPES, SCAN_TIMEOUT_SECONDS, true);
+        super(GardenaGatewayHandler.class, DEVICE_THING_TYPES, SCAN_TIMEOUT_SECONDS, false);
     }
 
     @Override
