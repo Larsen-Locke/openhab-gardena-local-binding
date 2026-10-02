@@ -4,12 +4,12 @@
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>org.openhab.binding</groupId>
-  <artifactId>org.openhab.binding.gardenalocal</artifactId>
+  <groupId>io.github.larsenlocke</groupId>
+  <artifactId>io.github.larsenlocke.binding.gardenalocal</artifactId>
   <version>5.2.1.1</version>
   <packaging>jar</packaging>
 
-  <name>openHAB Add-ons :: Bundles :: GARDENA smart local Binding</name>
+  <name>GARDENA smart local Binding</name>
   <description>openHAB binding for GARDENA smart system devices (irrigation control, water controls, sensors), talking to the GARDENA smart Gateway over its local WebSocket API instead of the GARDENA cloud. The message format follows GARDENA's own gardena-smart-local-api library, https://github.com/cloudless-garden/gardena-smart-local-api.</description>
 
   <properties>

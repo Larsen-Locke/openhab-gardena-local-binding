@@ -1,10 +1,10 @@
 Bundle-SymbolicName: ${project.artifactId}
-Bundle-Name: openHAB Add-ons :: Bundles :: GARDENA smart local Binding
-Bundle-Vendor: openHAB
+Bundle-Name: GARDENA smart local Binding
+Bundle-Vendor: Larsen-Locke
 Bundle-Category: binding
 
 Private-Package: \
-    org.openhab.binding.gardenalocal.internal.*
+    io.github.larsenlocke.binding.gardenalocal.internal.*
 
 -dsannotations: *
 -metatypeannotations: *
