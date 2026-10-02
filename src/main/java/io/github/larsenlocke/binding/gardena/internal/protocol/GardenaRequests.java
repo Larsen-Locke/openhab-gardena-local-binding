@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.protocol;
+package io.github.larsenlocke.binding.gardena.internal.protocol;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaModel.Generation;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaModel.Generation;
 
 /**
  * Builds the frames this binding sends to the gateway. A frame is a JSON array of requests, each addressing a

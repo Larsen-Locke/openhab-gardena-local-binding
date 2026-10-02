@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.handler;
+package io.github.larsenlocke.binding.gardena.internal.handler;
 
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.CONFIG_DEVICE_ID;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.CONFIG_DEVICE_ID;
 
 import java.io.IOException;
 import java.net.URI;
@@ -52,12 +52,12 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.JsonElement;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.config.GardenaGatewayConfiguration;
-import io.github.larsenlocke.binding.gardenalocal.internal.discovery.GardenaDeviceDiscoveryService;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaConnection;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaDevice;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaMessage;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaRequests;
+import io.github.larsenlocke.binding.gardena.internal.config.GardenaGatewayConfiguration;
+import io.github.larsenlocke.binding.gardena.internal.discovery.GardenaDeviceDiscoveryService;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaConnection;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaDevice;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaMessage;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaRequests;
 
 /**
  * The GARDENA smart Gateway. Owns the WebSocket connection, keeps every paired device's data tree current and

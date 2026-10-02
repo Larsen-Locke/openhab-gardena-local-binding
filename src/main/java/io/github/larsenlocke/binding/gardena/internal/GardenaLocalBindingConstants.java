@@ -10,14 +10,14 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal;
+package io.github.larsenlocke.binding.gardena.internal;
 
 import java.util.Set;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaModel;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaModel;
 
 /**
  * Constants used across the whole binding.

@@ -10,11 +10,11 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.config;
+package io.github.larsenlocke.binding.gardena.internal.config;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants;
+import io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants;
 
 /**
  * Configuration of the gateway bridge.

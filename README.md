@@ -188,7 +188,7 @@ end
 | "The gateway rejected the password"                      | Wrong password; it is the first block of the gateway ID on the back of the gateway.    |
 | "Lost the connection to the gateway (...), retrying..."  | Network problem or gateway restart; the binding reconnects with a growing delay of 5 to 60 seconds. |
 
-`DEBUG` logging for `io.github.larsenlocke.binding.gardenalocal` shows the connection's life cycle, `TRACE` every message exchanged with the gateway.
+`DEBUG` logging for `io.github.larsenlocke.binding.gardena` shows the connection's life cycle, `TRACE` every message exchanged with the gateway.
 The password never appears in the log.
 
 ## Building
@@ -201,8 +201,8 @@ This is a **standalone** Maven module that uses `bnd-maven-plugin` to produce an
 It depends on openHAB core artifacts resolved from the openHAB JFrog repository, configured in `pom.xml`.
 Adjust `openhab.core.version` in `pom.xml` to match the openHAB version you are running.
 
-Drop the resulting `target/io.github.larsenlocke.binding.gardenalocal-*.jar` into your openHAB `addons/` folder.
-Remove the previous `io.github.larsenlocke.binding.gardenalocal-*.jar` from `addons/` first, otherwise openHAB loads two versions side by side.
+Drop the resulting `target/io.github.larsenlocke.binding.gardena-*.jar` into your openHAB `addons/` folder.
+Remove the previous `io.github.larsenlocke.binding.gardena-*.jar` from `addons/` first, otherwise openHAB loads two versions side by side.
 
 `mvn verify` also runs the checks openHAB applies to its official add-ons: Spotless for the code style (`mvn spotless:apply` fixes it) and the static code analysis (Checkstyle, PMD, SpotBugs), whose report ends up in `target/code-analysis/report.html`.
 `sat/` holds the rule parameters and general suppressions of openhab-addons.

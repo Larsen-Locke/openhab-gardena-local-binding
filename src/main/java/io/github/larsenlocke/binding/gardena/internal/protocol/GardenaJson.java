@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.protocol;
+package io.github.larsenlocke.binding.gardena.internal.protocol;
 
 import java.util.ArrayList;
 import java.util.List;

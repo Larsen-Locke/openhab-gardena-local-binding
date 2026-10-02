@@ -10,10 +10,10 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal;
+package io.github.larsenlocke.binding.gardena.internal;
 
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.DEVICE_THING_TYPES;
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.THING_TYPE_GATEWAY;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.DEVICE_THING_TYPES;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.THING_TYPE_GATEWAY;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -28,8 +28,8 @@ import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.handler.GardenaDeviceHandler;
-import io.github.larsenlocke.binding.gardenalocal.internal.handler.GardenaGatewayHandler;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaDeviceHandler;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaGatewayHandler;
 
 /**
  * Creates the handlers for this binding's thing types.

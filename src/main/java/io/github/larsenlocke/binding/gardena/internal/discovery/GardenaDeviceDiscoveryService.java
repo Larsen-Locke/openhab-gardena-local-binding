@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.discovery;
+package io.github.larsenlocke.binding.gardena.internal.discovery;
 
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.*;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.*;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -29,8 +29,8 @@ import org.openhab.core.thing.ThingUID;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.ServiceScope;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.handler.GardenaGatewayHandler;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaDevice;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaGatewayHandler;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaDevice;
 
 /**
  * Proposes every supported device paired with the gateway that has no thing yet. There is nothing to search for:

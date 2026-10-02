@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal;
+package io.github.larsenlocke.binding.gardena.internal;
 
 import static org.junit.jupiter.api.Assertions.*;
 

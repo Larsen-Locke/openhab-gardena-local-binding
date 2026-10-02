@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.discovery;
+package io.github.larsenlocke.binding.gardena.internal.discovery;
 
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.*;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.*;
 
 import java.net.Inet4Address;
 import java.util.Set;

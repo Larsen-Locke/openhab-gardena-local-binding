@@ -10,9 +10,9 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.handler;
+package io.github.larsenlocke.binding.gardena.internal.handler;
 
-import static io.github.larsenlocke.binding.gardenalocal.internal.GardenaLocalBindingConstants.*;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.*;
 
 import java.time.Instant;
 import java.time.ZoneId;
@@ -47,12 +47,12 @@ import org.openhab.core.types.State;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.config.GardenaDeviceConfiguration;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaDevice;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaMessage;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaModel;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaModel.Family;
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaRequests;
+import io.github.larsenlocke.binding.gardena.internal.config.GardenaDeviceConfiguration;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaDevice;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaMessage;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaModel;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaModel.Family;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaRequests;
 
 /**
  * One GARDENA device underneath the gateway: a water control, dual water control, irrigation control or sensor.

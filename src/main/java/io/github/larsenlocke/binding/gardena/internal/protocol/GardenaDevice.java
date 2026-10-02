@@ -10,7 +10,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0
  */
-package io.github.larsenlocke.binding.gardenalocal.internal.protocol;
+package io.github.larsenlocke.binding.gardena.internal.protocol;
 
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
@@ -24,7 +24,7 @@ import org.eclipse.jdt.annotation.Nullable;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
-import io.github.larsenlocke.binding.gardenalocal.internal.protocol.GardenaModel.Generation;
+import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaModel.Generation;
 
 /**
  * One device as the gateway reports it: its id (an SGTIN-96 in hex), its model, and its full data tree, which
