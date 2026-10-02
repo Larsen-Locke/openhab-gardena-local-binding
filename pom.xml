@@ -29,10 +29,6 @@
     <spotless.version>2.44.3</spotless.version>
     <spotless.eclipse.version>4.25</spotless.eclipse.version>
     <spotless.eclipse.wtp.version>4.21.0</spotless.eclipse.wtp.version>
-
-    <!-- Colon-free so it's safe in a Windows filename; used in <finalName> below so every local build
-         produces a distinctly-named jar under target/ instead of always overwriting the same file name. -->
-    <maven.build.timestamp.format>yyyyMMdd-HHmmss</maven.build.timestamp.format>
   </properties>
 
   <!--
@@ -188,7 +184,6 @@
   </dependencies>
 
   <build>
-    <finalName>${project.artifactId}-${project.version}-${maven.build.timestamp}</finalName>
     <plugins>
       <plugin>
         <groupId>biz.aQute.bnd</groupId>
