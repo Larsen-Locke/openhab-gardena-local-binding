@@ -1,5 +1,5 @@
 Bundle-SymbolicName: ${project.artifactId}
-Bundle-Name: GARDENA smart local Binding
+Bundle-Name: GARDENA Binding (local)
 Bundle-Vendor: Larsen-Locke
 Bundle-Category: binding
 

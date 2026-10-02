@@ -9,7 +9,7 @@
   <version>5.2.1.2</version>
   <packaging>jar</packaging>
 
-  <name>GARDENA smart local Binding</name>
+  <name>GARDENA Binding (local)</name>
   <description>openHAB binding for GARDENA smart system devices (irrigation control, water controls, sensors), talking to the GARDENA smart Gateway over its local WebSocket API instead of the GARDENA cloud. The message format follows GARDENA's own gardena-smart-local-api library, https://github.com/cloudless-garden/gardena-smart-local-api.</description>
 
   <properties>

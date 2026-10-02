@@ -1,4 +1,4 @@
-# GARDENA smart local Binding
+# GARDENA Binding (local)
 
 This binding controls GARDENA smart system devices through the **local** WebSocket API of the GARDENA smart Gateway.
 It needs no GARDENA cloud connection, no Husqvarna developer account and no API key.
@@ -50,7 +50,7 @@ The GARDENA app and cloud keep working alongside the local API.
 The gateway announces itself via mDNS (`_gardena-smart._tcp`) and shows up in the Inbox.
 Only the password has to be added after approving it.
 
-Devices are proposed only while a scan is running: press "Scan" for the GARDENA smart local binding in the Inbox once the gateway is online.
+Devices are proposed only while a scan is running: press "Scan" for the GARDENA Binding (local) in the Inbox once the gateway is online.
 Every supported device paired with the gateway that has no thing yet is proposed.
 
 Devices are paired with the gateway in the GARDENA app, as before.

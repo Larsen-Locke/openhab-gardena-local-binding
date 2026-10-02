@@ -4,7 +4,7 @@
 	xsi:schemaLocation="https://openhab.org/schemas/addon/v1.0.0 https://openhab.org/schemas/addon-1.0.0.xsd">
 
 	<type>binding</type>
-	<name>GARDENA smart local Binding</name>
+	<name>GARDENA Binding (local)</name>
 	<description>Controls GARDENA smart irrigation controls and water controls and reads GARDENA smart sensors through the
 		local WebSocket API of the GARDENA smart Gateway, without the GARDENA cloud.</description>
 	<connection>local</connection>
