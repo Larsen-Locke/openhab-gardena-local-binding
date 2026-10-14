@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2010-2026 Contributors to the openHAB project
+ * Copyright (c) 2026 Larsen-Locke and contributors
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file distributed with this work for additional information.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * https://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -46,7 +45,7 @@ import io.github.larsenlocke.binding.gardena.internal.protocol.GardenaDevice;
  * every service returned from {@code getServices()} under every interface it implements, and fails to enable
  * the bridge when one of those is not an OSGi service interface. {@link #listener} provides the callback instead.
  *
- * @author Carsten Mogge - Initial contribution
+ * @author Larsen-Locke - Initial contribution
  */
 @Component(scope = ServiceScope.PROTOTYPE, service = GardenaDeviceDiscoveryService.class)
 @NonNullByDefault

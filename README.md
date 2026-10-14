@@ -227,3 +227,7 @@ The cloud binding's `activity` (`CLOSED`, `MANUAL_WATERING`, `SCHEDULED_WATERING
 
 The GARDENA smart local API and its message format are documented by GARDENA's own open-source projects, [gardena-smart-local-api](https://github.com/cloudless-garden/gardena-smart-local-api) and [ha-gardena-smart-local-preview](https://github.com/cloudless-garden/ha-gardena-smart-local-preview).
 This binding is an independent Java implementation of the same protocol; see [NOTICE](NOTICE).
+
+This is an independent add-on, not part of the official openHAB distribution, and not affiliated with, authorized or endorsed by GARDENA or Husqvarna; "GARDENA" is a name of its respective owner.
+
+Most of the code, the tests and the documentation were written with the help of an AI coding assistant (Claude by Anthropic). The maintainer reviews the changes and tests every release on real hardware before publishing it.

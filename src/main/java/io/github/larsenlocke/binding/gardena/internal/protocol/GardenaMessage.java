@@ -1,12 +1,11 @@
 /*
- * Copyright (c) 2010-2026 Contributors to the openHAB project
+ * Copyright (c) 2026 Larsen-Locke and contributors
  *
- * See the NOTICE file(s) distributed with this work for additional
- * information.
+ * See the NOTICE file distributed with this work for additional information.
  *
  * This program and the accompanying materials are made available under the
  * terms of the Eclipse Public License 2.0 which is available at
- * http://www.eclipse.org/legal/epl-2.0
+ * https://www.eclipse.org/legal/epl-2.0
  *
  * SPDX-License-Identifier: EPL-2.0
  */
@@ -34,7 +33,7 @@ import com.google.gson.JsonSyntaxException;
  * carries the gateway's error text as {@code payload.vs}.</li>
  * </ul>
  *
- * @author Carsten Mogge - Initial contribution
+ * @author Larsen-Locke - Initial contribution
  */
 @NonNullByDefault
 public final class GardenaMessage {
