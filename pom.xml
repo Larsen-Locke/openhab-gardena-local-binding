@@ -12,6 +12,24 @@
   <name>GARDENA Binding (local)</name>
   <description>openHAB binding for GARDENA smart system devices (irrigation control, water controls, sensors), talking to the GARDENA smart Gateway over its local WebSocket API instead of the GARDENA cloud. The message format follows GARDENA's own gardena-smart-local-api library, https://github.com/cloudless-garden/gardena-smart-local-api.</description>
 
+  <licenses>
+    <license>
+      <name>Eclipse Public License 2.0</name>
+      <url>https://www.eclipse.org/legal/epl-2.0/</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <developers>
+    <developer>
+      <id>Larsen-Locke</id>
+      <url>https://github.com/Larsen-Locke</url>
+      <roles>
+        <role>maintainer</role>
+      </roles>
+    </developer>
+  </developers>
+
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <maven.compiler.source>21</maven.compiler.source>
