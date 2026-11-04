@@ -191,37 +191,10 @@ end
 `DEBUG` logging for `io.github.larsenlocke.binding.gardena` shows the connection's life cycle, `TRACE` every message exchanged with the gateway.
 The password never appears in the log.
 
-## Building
-
-```shell
-mvn clean install
-```
-
-This is a **standalone** Maven module that uses `bnd-maven-plugin` to produce an OSGi bundle, rather than part of the official `openhab-addons` reactor build.
-It depends on openHAB core artifacts resolved from the openHAB JFrog repository, configured in `pom.xml`.
-Adjust `openhab.core.version` in `pom.xml` to match the openHAB version you are running.
-
-Drop the resulting `target/io.github.larsenlocke.binding.gardena-*.jar` into your openHAB `addons/` folder.
-Remove the previous `io.github.larsenlocke.binding.gardena-*.jar` from `addons/` first, otherwise openHAB loads two versions side by side.
-
-`mvn verify` also runs the checks openHAB applies to its official add-ons: Spotless for the code style (`mvn spotless:apply` fixes it) and the static code analysis (Checkstyle, PMD, SpotBugs), whose report ends up in `target/code-analysis/report.html`.
-`sat/` holds the rule parameters and general suppressions of openhab-addons.
-
-`mvn test` runs the unit tests, including one against a stand-in gateway that checks login, the device list, a valve command and reconnecting.
-
-The binding ID `gardenalocal` differs from the cloud binding's `gardena`, so both can be installed at the same time while migrating.
-
 ## Migrating from the Cloud Binding
 
 The cloud binding's `commandDuration` plus `start_seconds_to_override`/`stop_until_next_task` pair maps onto `duration` plus `state`: link the duration item to `valveN#duration` and the switch item to `valveN#state`, both with the default profile.
 The cloud binding's `activity` (`CLOSED`, `MANUAL_WATERING`, `SCHEDULED_WATERING`) has no counterpart; `state` reports open or closed directly.
-
-## Roadmap
-
-1. smart Power Adapter
-2. smart Pump
-3. SILENO mowers
-4. Remaining watering time, pausing schedules
 
 ## Credits
 
