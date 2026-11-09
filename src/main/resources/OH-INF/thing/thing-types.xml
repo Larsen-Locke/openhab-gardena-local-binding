@@ -150,6 +150,124 @@
 		</config-description>
 	</thing-type>
 
+	<thing-type id="power-adapter">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="gateway"/>
+		</supported-bridge-type-refs>
+
+		<label>smart Power Adapter</label>
+		<description>A smart Power Adapter: an outlet that is switched on for a duration or until switched off.</description>
+		<semantic-equipment-tag>PowerOutlet</semantic-equipment-tag>
+
+		<channels>
+			<channel id="state" typeId="power-state"/>
+			<channel id="duration" typeId="power-duration"/>
+			<channel id="rf-link-quality" typeId="rf-link-quality"/>
+			<channel id="last-seen" typeId="last-seen"/>
+		</channels>
+
+		<representation-property>deviceId</representation-property>
+
+		<config-description>
+			<parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
+				<label>Device ID</label>
+				<description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
+			</parameter>
+			<parameter name="onDuration" type="integer" min="0" max="1440" unit="min">
+				<label>On Duration</label>
+				<description>How long the outlet stays on when switched ON, in minutes, until its On Duration channel is set to
+					something else. 0 keeps it on until it is switched off.</description>
+				<default>0</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="pump">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="gateway"/>
+		</supported-bridge-type-refs>
+
+		<label>Home &amp; Garden Pump</label>
+		<description>A smart Automatic Home &amp; Garden Pump. In scheduled mode it runs for a duration when switched ON; in
+			automatic mode it starts by itself when the outlet pressure drops and ignores manual starts.</description>
+		<semantic-equipment-tag>Pump</semantic-equipment-tag>
+
+		<channels>
+			<channel id="state" typeId="pump-running"/>
+			<channel id="duration" typeId="pump-duration"/>
+			<channel id="operating-mode" typeId="operating-mode"/>
+			<channel id="pump-state" typeId="pump-state"/>
+			<channel id="outlet-pressure" typeId="outlet-pressure"/>
+			<channel id="outlet-temperature" typeId="outlet-temperature"/>
+			<channel id="flow-rate" typeId="flow-rate"/>
+			<channel id="flow-total" typeId="flow-total"/>
+			<channel id="flow-since-reset" typeId="flow-since-reset"/>
+			<channel id="turn-on-pressure" typeId="turn-on-pressure"/>
+			<channel id="dripping-alert" typeId="dripping-alert"/>
+			<channel id="error" typeId="pump-error"/>
+			<channel id="command" typeId="pump-command"/>
+			<channel id="frost-warning" typeId="frost-warning"/>
+			<channel id="rf-link-quality" typeId="rf-link-quality"/>
+			<channel id="last-seen" typeId="last-seen"/>
+		</channels>
+
+		<representation-property>deviceId</representation-property>
+
+		<config-description>
+			<parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
+				<label>Device ID</label>
+				<description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
+			</parameter>
+			<parameter name="runDuration" type="integer" min="1" max="90" unit="min">
+				<label>Run Duration</label>
+				<description>How long the pump runs when switched ON, in minutes, until its Run Duration channel is set to
+					something
+					else. The pump stops by itself when the time is up.</description>
+				<default>30</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
+	<thing-type id="mower">
+		<supported-bridge-type-refs>
+			<bridge-type-ref id="gateway"/>
+		</supported-bridge-type-refs>
+
+		<label>SILENO Mower</label>
+		<description>A SILENO robotic mower: smart SILENO, SILENO+, city, life (also with LONA), pro, max and free.</description>
+		<semantic-equipment-tag>LawnMower</semantic-equipment-tag>
+
+		<channels>
+			<channel id="activity" typeId="mower-activity"/>
+			<channel id="command" typeId="mower-command"/>
+			<channel id="duration" typeId="mowing-duration"/>
+			<channel id="battery-level" typeId="battery-level"/>
+			<channel id="error-code" typeId="mower-error-code"/>
+			<channel id="cutting-time" typeId="cutting-time"/>
+			<channel id="charging-cycles" typeId="charging-cycles"/>
+			<channel id="collisions" typeId="collisions"/>
+			<channel id="rf-link-quality" typeId="rf-link-quality"/>
+			<channel id="signal-strength" typeId="signal-strength"/>
+			<channel id="last-seen" typeId="last-seen"/>
+		</channels>
+
+		<representation-property>deviceId</representation-property>
+
+		<config-description>
+			<parameter name="deviceId" type="text" required="true" pattern="[0-9A-Fa-f]{24}">
+				<label>Device ID</label>
+				<description>The device's ID on the gateway, 24 hexadecimal digits. Filled in by discovery.</description>
+			</parameter>
+			<parameter name="mowingDuration" type="integer" min="1" max="6" unit="h">
+				<label>Mowing Duration</label>
+				<description>How long the mower mows when started, in hours, until its Mowing Duration channel is set to
+					something
+					else.</description>
+				<default>3</default>
+			</parameter>
+		</config-description>
+	</thing-type>
+
 	<channel-group-type id="valve">
 		<label>Valve</label>
 		<channels>
@@ -368,6 +486,322 @@
 			<tag>Illuminance</tag>
 		</tags>
 		<state readOnly="true" pattern="%d %unit%"/>
+	</channel-type>
+
+	<channel-type id="power-state">
+		<item-type>Switch</item-type>
+		<label>Power</label>
+		<description>ON while the outlet is on, also when a schedule switched it on. Switching it ON turns it on for the On
+			Duration, OFF turns it off.</description>
+		<category>PowerOutlet</category>
+		<tags>
+			<tag>Switch</tag>
+			<tag>Power</tag>
+		</tags>
+	</channel-type>
+
+	<channel-type id="power-duration">
+		<item-type unitHint="min">Number:Time</item-type>
+		<label>On Duration</label>
+		<description>How long the outlet stays on when switched ON, e.g. 30 min; 0 keeps it on until it is switched off.
+			Setting it does not switch the outlet. A plain number is taken as minutes. Starts at the thing's on duration
+			after a
+			restart.</description>
+		<category>Time</category>
+		<tags>
+			<tag>Setpoint</tag>
+			<tag>Duration</tag>
+		</tags>
+		<state min="0" max="1440" step="1" pattern="%d min"/>
+	</channel-type>
+
+	<channel-type id="pump-running">
+		<item-type>Switch</item-type>
+		<label>Pumping</label>
+		<description>ON while the pump's motor runs, also when it started by itself. Switching it ON runs the pump for the Run
+			Duration, OFF stops it; both only in scheduled mode.</description>
+		<category>Water</category>
+		<tags>
+			<tag>Switch</tag>
+			<tag>Water</tag>
+		</tags>
+	</channel-type>
+
+	<channel-type id="pump-duration">
+		<item-type unitHint="min">Number:Time</item-type>
+		<label>Run Duration</label>
+		<description>How long the pump runs when switched ON, e.g. 15 min. Setting it does not start the pump. A plain number
+			is
+			taken as minutes. Starts at the thing's run duration after a restart.</description>
+		<category>Time</category>
+		<tags>
+			<tag>Setpoint</tag>
+			<tag>Duration</tag>
+		</tags>
+		<state min="1" max="90" step="1" pattern="%d min"/>
+	</channel-type>
+
+	<channel-type id="operating-mode">
+		<item-type>String</item-type>
+		<label>Operating Mode</label>
+		<description>Scheduled: the pump runs when switched on or by a schedule. Automatic: it starts by itself when the
+			outlet
+			pressure drops below the turn-on pressure.</description>
+		<tags>
+			<tag>Control</tag>
+			<tag>Mode</tag>
+		</tags>
+		<state>
+			<options>
+				<option value="scheduled">Scheduled</option>
+				<option value="automatic">Automatic</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="pump-state">
+		<item-type>String</item-type>
+		<label>Pump State</label>
+		<description>What the pump last found: whether it holds water and whether water flows.</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true">
+			<options>
+				<option value="starting">Starting</option>
+				<option value="water-in-pump">Water in the pump</option>
+				<option value="no-water-in-pump">No water in the pump</option>
+				<option value="flow">Water flows</option>
+				<option value="no-flow">No flow after 5 s</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="outlet-pressure">
+		<item-type unitHint="bar">Number:Pressure</item-type>
+		<label>Outlet Pressure</label>
+		<description>The water pressure at the pump's outlet.</description>
+		<category>Pressure</category>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Pressure</tag>
+		</tags>
+		<state readOnly="true" pattern="%.1f %unit%"/>
+	</channel-type>
+
+	<channel-type id="outlet-temperature">
+		<item-type unitHint="°C">Number:Temperature</item-type>
+		<label>Water Temperature</label>
+		<description>The water temperature at the pump's outlet.</description>
+		<category>Temperature</category>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Temperature</tag>
+		</tags>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="flow-rate">
+		<item-type unitHint="l/h">Number:VolumetricFlowRate</item-type>
+		<label>Flow Rate</label>
+		<description>The water flow while the pump runs, 0 while it stands. The pump reports it in steps of about 76 l/h.</description>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Water</tag>
+		</tags>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="flow-total">
+		<item-type unitHint="m³">Number:Volume</item-type>
+		<label>Total Volume</label>
+		<description>The water pumped over the pump's lifetime.</description>
+		<category>Water</category>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Water</tag>
+		</tags>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="flow-since-reset">
+		<item-type unitHint="m³">Number:Volume</item-type>
+		<label>Volume Since Reset</label>
+		<description>The water pumped since the counter was last reset with the reset-flow command.</description>
+		<category>Water</category>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Water</tag>
+		</tags>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="turn-on-pressure" advanced="true">
+		<item-type unitHint="bar">Number:Pressure</item-type>
+		<label>Turn-On Pressure</label>
+		<description>In automatic mode the pump starts when the outlet pressure drops below this, 0 to 10 bar. A plain number
+			is
+			taken as bar.</description>
+		<category>Pressure</category>
+		<tags>
+			<tag>Setpoint</tag>
+			<tag>Pressure</tag>
+		</tags>
+		<state min="0" max="10" step="0.1" pattern="%.1f %unit%"/>
+	</channel-type>
+
+	<channel-type id="dripping-alert" advanced="true">
+		<item-type>String</item-type>
+		<label>Dripping Alert</label>
+		<description>When the pump reports a small leakage: after 60 minutes of dripping (standard), after 2 minutes
+			(sensitive), or never (off).</description>
+		<tags>
+			<tag>Control</tag>
+			<tag>Mode</tag>
+		</tags>
+		<state>
+			<options>
+				<option value="standard">After 60 minutes</option>
+				<option value="sensitive">After 2 minutes</option>
+				<option value="off">Off</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="pump-error">
+		<item-type>String</item-type>
+		<label>Pump Error</label>
+		<description>What the pump reports as wrong, if anything. Reset it with the reset-errors command after fixing it.</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true">
+			<options>
+				<option value="none">None</option>
+				<option value="pump-not-filled">Pump not filled</option>
+				<option value="clean-gasket">Clean the gasket</option>
+				<option value="clean-fine-mesh">Clean the fine mesh filter</option>
+				<option value="small-leakage">Small leakage</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="pump-command" advanced="true">
+		<item-type>String</item-type>
+		<label>Command</label>
+		<description>Resets a counter or the error state of the pump.</description>
+		<tags>
+			<tag>Control</tag>
+		</tags>
+		<command>
+			<options>
+				<option value="reset-flow">Reset volume since reset</option>
+				<option value="reset-errors">Reset errors</option>
+				<option value="reset-temperature-min-max">Reset temperature min/max</option>
+			</options>
+		</command>
+		<autoUpdatePolicy>veto</autoUpdatePolicy>
+	</channel-type>
+
+	<channel-type id="mower-activity">
+		<item-type>String</item-type>
+		<label>Activity</label>
+		<description>What the mower is doing.</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Mode</tag>
+		</tags>
+		<state readOnly="true">
+			<options>
+				<option value="parked">Parked</option>
+				<option value="leaving">Leaving the charging station</option>
+				<option value="mowing">Mowing</option>
+				<option value="paused">Paused</option>
+				<option value="returning">Returning to the charging station</option>
+				<option value="charging">Charging</option>
+				<option value="error">Error</option>
+				<option value="unknown">Unknown</option>
+			</options>
+		</state>
+	</channel-type>
+
+	<channel-type id="mower-command">
+		<item-type>String</item-type>
+		<label>Command</label>
+		<description>Starts mowing for the Mowing Duration, parks the mower until its next scheduled start or until further
+			notice (schedule paused), or pauses it where it is (second-generation mowers only).</description>
+		<tags>
+			<tag>Control</tag>
+		</tags>
+		<command>
+			<options>
+				<option value="start">Start mowing</option>
+				<option value="park-until-next-schedule">Park until next schedule</option>
+				<option value="park-until-further-notice">Park until further notice</option>
+				<option value="pause">Pause</option>
+			</options>
+		</command>
+		<autoUpdatePolicy>veto</autoUpdatePolicy>
+	</channel-type>
+
+	<channel-type id="mowing-duration">
+		<item-type unitHint="h">Number:Time</item-type>
+		<label>Mowing Duration</label>
+		<description>How long a start mows, e.g. 2 h. Setting it does not start the mower. A plain number is taken as hours.
+			Starts at the thing's mowing duration after a restart.</description>
+		<category>Time</category>
+		<tags>
+			<tag>Setpoint</tag>
+			<tag>Duration</tag>
+		</tags>
+		<state min="1" max="6" step="1" pattern="%d h"/>
+	</channel-type>
+
+	<channel-type id="mower-error-code" advanced="true">
+		<item-type>Number</item-type>
+		<label>Error Code</label>
+		<description>The mower's last error code as reported by the mower, 0 for none.</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true" pattern="%d"/>
+	</channel-type>
+
+	<channel-type id="cutting-time" advanced="true">
+		<item-type unitHint="h">Number:Time</item-type>
+		<label>Cutting Time</label>
+		<description>How long the cutting disc has been running over the mower's lifetime (first-generation mowers).</description>
+		<category>Time</category>
+		<tags>
+			<tag>Measurement</tag>
+			<tag>Duration</tag>
+		</tags>
+		<state readOnly="true" pattern="%.0f %unit%"/>
+	</channel-type>
+
+	<channel-type id="charging-cycles" advanced="true">
+		<item-type>Number</item-type>
+		<label>Charging Cycles</label>
+		<description>Completed charging cycles over the mower's lifetime (first-generation mowers).</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true" pattern="%d"/>
+	</channel-type>
+
+	<channel-type id="collisions" advanced="true">
+		<item-type>Number</item-type>
+		<label>Collisions</label>
+		<description>Collisions over the mower's lifetime (first-generation mowers).</description>
+		<tags>
+			<tag>Status</tag>
+			<tag>Info</tag>
+		</tags>
+		<state readOnly="true" pattern="%d"/>
 	</channel-type>
 
 </thing:thing-descriptions>

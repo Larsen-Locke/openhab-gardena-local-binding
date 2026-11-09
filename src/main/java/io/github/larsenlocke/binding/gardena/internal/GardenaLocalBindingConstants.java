@@ -12,6 +12,8 @@
 package io.github.larsenlocke.binding.gardena.internal;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.openhab.core.thing.ThingTypeUID;
@@ -34,9 +36,19 @@ public class GardenaLocalBindingConstants {
     public static final ThingTypeUID THING_TYPE_DUAL_WATER_CONTROL = thingType(GardenaModel.Family.DUAL_WATER_CONTROL);
     public static final ThingTypeUID THING_TYPE_IRRIGATION_CONTROL = thingType(GardenaModel.Family.IRRIGATION_CONTROL);
     public static final ThingTypeUID THING_TYPE_SENSOR = thingType(GardenaModel.Family.SENSOR);
+    public static final ThingTypeUID THING_TYPE_POWER_ADAPTER = thingType(GardenaModel.Family.POWER_ADAPTER);
+    public static final ThingTypeUID THING_TYPE_PUMP = thingType(GardenaModel.Family.PUMP);
+    public static final ThingTypeUID THING_TYPE_MOWER = thingType(GardenaModel.Family.MOWER);
 
-    public static final Set<ThingTypeUID> DEVICE_THING_TYPES = Set.of(THING_TYPE_WATER_CONTROL,
+    /** Valves and measurements, handled by GardenaDeviceHandler. */
+    public static final Set<ThingTypeUID> VALVE_AND_SENSOR_THING_TYPES = Set.of(THING_TYPE_WATER_CONTROL,
             THING_TYPE_DUAL_WATER_CONTROL, THING_TYPE_IRRIGATION_CONTROL, THING_TYPE_SENSOR);
+
+    /** Every thing type underneath the gateway. */
+    public static final Set<ThingTypeUID> DEVICE_THING_TYPES = Stream
+            .concat(VALVE_AND_SENSOR_THING_TYPES.stream(),
+                    Stream.of(THING_TYPE_POWER_ADAPTER, THING_TYPE_PUMP, THING_TYPE_MOWER))
+            .collect(Collectors.toUnmodifiableSet());
 
     // -- Gateway configuration and properties --
     public static final String CONFIG_HOST = "host";
@@ -70,6 +82,26 @@ public class GardenaLocalBindingConstants {
     public static final String CHANNEL_SOIL_TEMPERATURE = "soil-temperature";
     public static final String CHANNEL_AMBIENT_TEMPERATURE = "ambient-temperature";
     public static final String CHANNEL_LIGHT_INTENSITY = "light-intensity";
+
+    // -- Power adapter, pump and mower channel ids (no groups) --
+    public static final String CHANNEL_STATE = "state";
+    public static final String CHANNEL_DURATION = "duration";
+    public static final String CHANNEL_COMMAND = "command";
+    public static final String CHANNEL_ERROR = "error";
+    public static final String CHANNEL_OPERATING_MODE = "operating-mode";
+    public static final String CHANNEL_TURN_ON_PRESSURE = "turn-on-pressure";
+    public static final String CHANNEL_DRIPPING_ALERT = "dripping-alert";
+    public static final String CHANNEL_PUMP_STATE = "pump-state";
+    public static final String CHANNEL_OUTLET_PRESSURE = "outlet-pressure";
+    public static final String CHANNEL_OUTLET_TEMPERATURE = "outlet-temperature";
+    public static final String CHANNEL_FLOW_RATE = "flow-rate";
+    public static final String CHANNEL_FLOW_TOTAL = "flow-total";
+    public static final String CHANNEL_FLOW_SINCE_RESET = "flow-since-reset";
+    public static final String CHANNEL_ACTIVITY = "activity";
+    public static final String CHANNEL_ERROR_CODE = "error-code";
+    public static final String CHANNEL_CUTTING_TIME = "cutting-time";
+    public static final String CHANNEL_CHARGING_CYCLES = "charging-cycles";
+    public static final String CHANNEL_COLLISIONS = "collisions";
 
     private static ThingTypeUID thingType(GardenaModel.Family family) {
         return new ThingTypeUID(BINDING_ID, family.getThingTypeId());

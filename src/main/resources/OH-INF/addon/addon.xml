@@ -5,8 +5,9 @@
 
 	<type>binding</type>
 	<name>GARDENA Binding (local)</name>
-	<description>Controls GARDENA smart irrigation controls and water controls and reads GARDENA smart sensors through the
-		local WebSocket API of the GARDENA smart Gateway, without the GARDENA cloud.</description>
+	<description>Controls GARDENA smart irrigation controls, water controls, power adapters, pumps and SILENO mowers and
+		reads GARDENA smart sensors through the local WebSocket API of the GARDENA smart Gateway, without the GARDENA
+		cloud.</description>
 	<connection>local</connection>
 
 	<discovery-methods>

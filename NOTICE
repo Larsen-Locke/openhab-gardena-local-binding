@@ -3,7 +3,8 @@ the official openHAB distribution. It is not affiliated with, authorized or endo
 "GARDENA" is a name of its respective owner. openHAB is a trademark of the openHAB Foundation e.V.
 
 Most of the source code, tests and documentation were written with the help of an AI coding assistant (Claude by
-Anthropic). The maintainer reviews the changes and tests every release on real hardware before publishing it.
+Anthropic). The maintainer reviews the changes and tests every release on real hardware before publishing it;
+pre-releases marked alpha are the exception and are published for testing by owners of the devices concerned.
 
 * Project license: see LICENSE (Eclipse Public License 2.0), matching openHAB add-on convention.
 
@@ -18,5 +19,5 @@ device data paths) is documented by GARDENA's own open-source client library and
 
 This binding contains no code from either project. It is an independent Java implementation of the same
 protocol, written against those projects as a reference for message shapes, resource paths and device
-behaviour. The test fixture src/test/resources/device-list.json is modelled on the structure of the
-library's test data, with values of its own.
+behaviour. The test fixtures src/test/resources/device-list.json and appliances-list.json are modelled on the
+structure of the library's test data, with values of their own.

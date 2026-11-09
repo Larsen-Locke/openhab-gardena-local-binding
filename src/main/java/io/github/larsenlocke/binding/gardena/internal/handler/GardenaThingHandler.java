@@ -297,6 +297,28 @@ public abstract class GardenaThingHandler extends BaseThingHandler {
         return null;
     }
 
+    /**
+     * The seconds a duration channel's command asks for, or null - logged - if the command is no duration or lies
+     * outside {@code minSeconds} to {@code maxSeconds}.
+     *
+     * @param plainUnit what a plain number means, and the unit the allowed range is logged in
+     */
+    protected @Nullable Integer durationSeconds(ChannelUID channelUID, Command command, Unit<?> plainUnit,
+            int minSeconds, int maxSeconds) {
+        Integer seconds = toSeconds(command, plainUnit);
+        if (seconds == null) {
+            logger.debug("Ignoring command {} for {}: not a duration", command, channelUID);
+            return null;
+        }
+        if (seconds < minSeconds || seconds > maxSeconds) {
+            logger.warn("Ignoring duration {} for {}: allowed are {} to {}", command, channelUID,
+                    new QuantityType<>(minSeconds, Units.SECOND).toUnit(plainUnit),
+                    new QuantityType<>(maxSeconds, Units.SECOND).toUnit(plainUnit));
+            return null;
+        }
+        return seconds;
+    }
+
     protected static @Nullable State onOff(@Nullable Boolean value) {
         return value == null ? null : OnOffType.from(value);
     }

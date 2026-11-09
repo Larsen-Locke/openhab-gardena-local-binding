@@ -19,8 +19,8 @@ import org.eclipse.jdt.annotation.Nullable;
  * {@code device/0/model_number} (the EAN suffix, not the article number printed on the box).
  *
  * <p>
- * Mowers, the pump and the power adapter are reported by the gateway too, but are not supported yet and are
- * therefore not listed here - a device with an unknown model number is simply not offered for discovery.
+ * The same devices as GARDENA's own Home Assistant integration. A device with an unknown model number is simply
+ * not offered for discovery.
  *
  * @author Larsen-Locke - Initial contribution
  */
@@ -34,14 +34,24 @@ public enum GardenaModel {
     IRRIGATION_CONTROL_GEN1("31653", Family.IRRIGATION_CONTROL, Generation.GEN1, "smart Irrigation Control"),
     IRRIGATION_CONTROL_GEN2("469", Family.IRRIGATION_CONTROL, Generation.GEN2, "smart Irrigation Control"),
     SENSOR("18845", Family.SENSOR, Generation.GEN1, "smart Sensor"),
-    SENSOR_II("19040", Family.SENSOR, Generation.GEN1, "smart Sensor II");
+    SENSOR_II("19040", Family.SENSOR, Generation.GEN1, "smart Sensor II"),
+    POWER_ADAPTER("35279", Family.POWER_ADAPTER, Generation.GEN1, "smart Power Adapter"),
+    PUMP("22538", Family.PUMP, Generation.GEN1, "smart Automatic Home & Garden Pump"),
+    SILENO("6146", Family.MOWER, Generation.GEN1, "smart SILENO"),
+    SILENO_CITY_LIFE("29694", Family.MOWER, Generation.GEN1, "smart SILENO city/life"),
+    /** Starts through a different resource that also takes the distance from the charging station. */
+    SILENO_CITY_LIFE_LONA("53988", Family.MOWER, Generation.GEN1, "smart SILENO city/life with LONA"),
+    SILENO_GEN2("488", Family.MOWER, Generation.GEN2, "smart SILENO pro/max/free");
 
     /** Which openHAB thing type a model is represented by, and how many valves that thing type has. */
     public enum Family {
         WATER_CONTROL("water-control", 1),
         DUAL_WATER_CONTROL("dual-water-control", 2),
         IRRIGATION_CONTROL("irrigation-control", 6),
-        SENSOR("sensor", 0);
+        SENSOR("sensor", 0),
+        POWER_ADAPTER("power-adapter", 0),
+        PUMP("pump", 0),
+        MOWER("mower", 0);
 
         private final String thingTypeId;
         private final int valveCount;
@@ -67,7 +77,7 @@ public enum GardenaModel {
     public enum Generation {
         /** Classic Lemonbeat devices, everything under {@code lemonbeat/0/...}. */
         GEN1("lemonbeatd"),
-        /** LwM2M devices with multi-instance {@code actuator}/{@code timeslot} objects. */
+        /** LwM2M devices, e.g. with multi-instance {@code actuator}/{@code timeslot} objects. */
         GEN2("lwm2mserver");
 
         private final String service;

@@ -271,6 +271,116 @@ public final class GardenaDevice {
         return model == GardenaModel.SENSOR ? GardenaJson.asDouble(value(GEN1 + "light")) : null;
     }
 
+    // -- Power adapter values --
+
+    /**
+     * Whether the power adapter's output is on. Its power timer is non-zero while on: the remaining seconds of a
+     * manual run (positive), of a scheduled one (negative), or {@link GardenaRequests#POWER_ON_INDEFINITELY}.
+     */
+    public synchronized @Nullable Boolean isPowerOn() {
+        Double timer = GardenaJson.asDouble(value(GEN1 + "power_timer"));
+        return timer == null ? null : timer != 0;
+    }
+
+    // -- Pump values --
+
+    /** Whether the pump's motor runs - also when it started by itself in automatic mode. */
+    public synchronized @Nullable Boolean isPumpRunning() {
+        Double motor = GardenaJson.asDouble(value(GEN1 + "pump_on_off"));
+        return motor == null ? null : motor != 0;
+    }
+
+    /** 0 = scheduled, 1 = automatic (the pump starts by itself when the outlet pressure drops). */
+    public synchronized @Nullable Integer getPumpOperatingMode() {
+        return toInteger(GardenaJson.asDouble(value(GEN1 + "operating_mode")));
+    }
+
+    /**
+     * 0 = just starting, 1 = water in the pump body, 2 = no water in the pump body, 3 = flow after 5 s,
+     * 4 = no flow after 5 s.
+     */
+    public synchronized @Nullable Integer getPumpState() {
+        return toInteger(GardenaJson.asDouble(value(GEN1 + "pump_state")));
+    }
+
+    /** Outlet pressure in bar. */
+    public synchronized @Nullable Double getOutletPressure() {
+        return GardenaJson.asDouble(value(GEN1 + "outlet_pressure"));
+    }
+
+    /** Outlet (water) temperature in °C. */
+    public synchronized @Nullable Double getOutletTemperature() {
+        return GardenaJson.asDouble(value(GEN1 + "outlet_temperature"));
+    }
+
+    /**
+     * Flow rate in l/h, 0 while the pump stands. The pump reports values from 100 upwards even when it is not
+     * running, so the raw value only counts while the motor runs.
+     */
+    public synchronized @Nullable Double getFlowRate() {
+        if (Boolean.FALSE.equals(isPumpRunning())) {
+            return 0.0;
+        }
+        return GardenaJson.asDouble(value(GEN1 + "flow_rate"));
+    }
+
+    /** Water pumped over the pump's lifetime, in m³. */
+    public synchronized @Nullable Double getFlowTotal() {
+        return GardenaJson.asDouble(value(GEN1 + "flow_total"));
+    }
+
+    /** Water pumped since the counter was last reset, in m³. */
+    public synchronized @Nullable Double getFlowSinceReset() {
+        return GardenaJson.asDouble(value(GEN1 + "flow_since_last_reset"));
+    }
+
+    /** Pressure below which the pump starts in automatic mode, in bar. */
+    public synchronized @Nullable Double getTurnOnPressure() {
+        return GardenaJson.asDouble(value(GEN1 + "turn_on_pressure"));
+    }
+
+    /** 0 = after 60 minutes (factory setting), 1 = after 2 minutes, 2 = off. */
+    public synchronized @Nullable Integer getDrippingAlert() {
+        return toInteger(GardenaJson.asDouble(value(GEN1 + "dripping_alert")));
+    }
+
+    // -- Mower values --
+
+    /** What the mower is doing, or null before it has reported its status at all. */
+    public synchronized @Nullable MowerActivity getMowerActivity() {
+        if (model.getGeneration() == Generation.GEN1) {
+            Integer status = toInteger(GardenaJson.asDouble(value(GEN1 + "status")));
+            return status == null ? null : MowerActivity.fromGen1Status(status);
+        }
+        Integer activity = toInteger(GardenaJson.asDouble(value("mower_app/0/activity")));
+        return activity == null ? null
+                : MowerActivity.fromGen2(activity, toInteger(GardenaJson.asDouble(value("mower_app/0/state"))));
+    }
+
+    /** The mower's last error code (Gen1 {@code last_error_code}, Gen2 {@code mower_app/0/error}), 0 for none. */
+    public synchronized @Nullable Integer getMowerErrorCode() {
+        String path = model.getGeneration() == Generation.GEN1 ? GEN1 + "last_error_code" : "mower_app/0/error";
+        return toInteger(GardenaJson.asDouble(value(path)));
+    }
+
+    /** Hours the cutting disc has been running, Gen1 only. */
+    public synchronized @Nullable Double getCuttingHours() {
+        return model.getGeneration() == Generation.GEN1 ? GardenaJson.asDouble(value(GEN1 + "cutting_time")) : null;
+    }
+
+    /** Completed charging cycles, Gen1 only. */
+    public synchronized @Nullable Integer getChargingCycles() {
+        return model.getGeneration() == Generation.GEN1
+                ? toInteger(GardenaJson.asDouble(value(GEN1 + "charging_cycles")))
+                : null;
+    }
+
+    /** Collisions so far, Gen1 only. */
+    public synchronized @Nullable Integer getCollisions() {
+        return model.getGeneration() == Generation.GEN1 ? toInteger(GardenaJson.asDouble(value(GEN1 + "collisions")))
+                : null;
+    }
+
     private @Nullable JsonElement value(String path) {
         return GardenaJson.getValue(data, GardenaJson.segments(path));
     }

@@ -27,9 +27,12 @@ import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Function;
 
+import javax.measure.Unit;
+
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
 import org.openhab.core.config.core.Configuration;
+import org.openhab.core.library.types.QuantityType;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -150,6 +153,19 @@ final class HandlerHarness {
         State state = states.get(channelId);
         assertNotNull(state, "no state published for " + channelId);
         return Objects.requireNonNull(state);
+    }
+
+    void assertQuantity(double expected, Unit<?> unit, String channelId) {
+        State state = state(channelId);
+        assertInstanceOf(QuantityType.class, state, channelId);
+        QuantityType<?> quantity = (QuantityType<?>) state;
+        assertEquals(unit, quantity.getUnit(), channelId);
+        assertEquals(expected, quantity.doubleValue(), 0.001, channelId);
+    }
+
+    /** The path of a sent request. */
+    static String path(JsonObject request) {
+        return request.getAsJsonObject("entity").get("path").getAsString();
     }
 
     JsonObject lastRequest() {

@@ -26,6 +26,8 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonParser;
 
 /**
  * Tests {@link GardenaDevice} against a device-list reply shaped like the gateway's, and against the events that
@@ -74,12 +76,20 @@ class GardenaDeviceTest {
     }
 
     @Test
-    void unsupportedModelsAreSkipped() {
-        assertEquals(3, devices.size());
-        assertFalse(devices.containsKey(POWER_ADAPTER));
+    void modelsAreRecognized() {
+        assertEquals(4, devices.size());
         assertEquals(GardenaModel.IRRIGATION_CONTROL_GEN1, device(IRRIGATION_CONTROL).getModel());
         assertEquals(GardenaModel.SENSOR, device(SENSOR).getModel());
         assertEquals(GardenaModel.WATER_CONTROL_GEN2, device(WATER_CONTROL_GEN2).getModel());
+        assertEquals(GardenaModel.POWER_ADAPTER, device(POWER_ADAPTER).getModel());
+    }
+
+    @Test
+    void unknownModelsAreSkipped() {
+        JsonObject data = JsonParser.parseString("{\"device\": {\"0\": {\"model_number\": {\"vs\": \"99999\"}}}}")
+                .getAsJsonObject();
+        assertNull(GardenaDevice.fromDiscovery("3034F8EE90226A0000009999", data));
+        assertEquals("99999", GardenaDevice.modelNumberOf(data));
     }
 
     @Test

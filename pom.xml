@@ -6,7 +6,7 @@
 
   <groupId>io.github.larsenlocke</groupId>
   <artifactId>io.github.larsenlocke.binding.gardena</artifactId>
-  <version>5.2.1.4</version>
+  <version>5.2.1.5</version>
   <packaging>jar</packaging>
 
   <name>GARDENA Binding (local)</name>

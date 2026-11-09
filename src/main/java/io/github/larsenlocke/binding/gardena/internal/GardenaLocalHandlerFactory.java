@@ -11,8 +11,7 @@
  */
 package io.github.larsenlocke.binding.gardena.internal;
 
-import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.DEVICE_THING_TYPES;
-import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.THING_TYPE_GATEWAY;
+import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBindingConstants.*;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
@@ -29,6 +28,9 @@ import org.osgi.service.component.annotations.Reference;
 
 import io.github.larsenlocke.binding.gardena.internal.handler.GardenaDeviceHandler;
 import io.github.larsenlocke.binding.gardena.internal.handler.GardenaGatewayHandler;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaMowerHandler;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaPowerAdapterHandler;
+import io.github.larsenlocke.binding.gardena.internal.handler.GardenaPumpHandler;
 
 /**
  * Creates the handlers for this binding's thing types.
@@ -57,8 +59,17 @@ public class GardenaLocalHandlerFactory extends BaseThingHandlerFactory {
         if (THING_TYPE_GATEWAY.equals(thingTypeUID) && thing instanceof Bridge bridge) {
             return new GardenaGatewayHandler(bridge, webSocketFactory);
         }
-        if (DEVICE_THING_TYPES.contains(thingTypeUID)) {
+        if (VALVE_AND_SENSOR_THING_TYPES.contains(thingTypeUID)) {
             return new GardenaDeviceHandler(thing);
+        }
+        if (THING_TYPE_POWER_ADAPTER.equals(thingTypeUID)) {
+            return new GardenaPowerAdapterHandler(thing);
+        }
+        if (THING_TYPE_PUMP.equals(thingTypeUID)) {
+            return new GardenaPumpHandler(thing);
+        }
+        if (THING_TYPE_MOWER.equals(thingTypeUID)) {
+            return new GardenaMowerHandler(thing);
         }
         return null;
     }

@@ -1,0 +1,126 @@
+[
+  {
+    "entity": { "path": "devices", "service": "lemonbeatd" },
+    "payload": {
+      "3034F8EE90226A0000001111": {
+        "connection_status": { "0": { "online": { "ts": 1770100000, "vb": true } } },
+        "device": {
+          "0": {
+            "device_type": { "ts": 1770100000, "vs": "Power Adapter" },
+            "model_number": { "ts": 1770100000, "vs": "35279" },
+            "serial_number": { "ts": 1770100000, "vs": "00011111" },
+            "software_version": { "ts": 1770100000, "vs": "3.0.3" }
+          }
+        },
+        "lemonbeat": {
+          "0": {
+            "error": { "ts": 1770100000, "vi": 0 },
+            "power_timer": { "ts": 1770100100, "vi": 0 },
+            "rf_link_quality": { "ts": 1770100200, "vi": 90 }
+          }
+        }
+      },
+      "3034F8EE902261C000002222": {
+        "connection_status": { "0": { "online": { "ts": 1770100000, "vb": true } } },
+        "device": {
+          "0": {
+            "device_type": { "ts": 1770100000, "vs": "Pump" },
+            "model_number": { "ts": 1770100000, "vs": "22538" },
+            "serial_number": { "ts": 1770100000, "vs": "00022222" },
+            "software_version": { "ts": 1770100000, "vs": "1.1.0" }
+          }
+        },
+        "lemonbeat": {
+          "0": {
+            "dripping_alert": { "ts": 1770100000, "vi": 0 },
+            "flow_rate": { "ts": 1770100000, "vi": 100 },
+            "flow_since_last_reset": { "ts": 1770100000, "vi": 3 },
+            "flow_total": { "ts": 1770100000, "vi": 12 },
+            "frost_warning": { "ts": 1770100000, "vi": 0 },
+            "operating_mode": { "ts": 1770100000, "vi": 0 },
+            "outlet_pressure": { "ts": 1770100000, "vf": 0.2 },
+            "outlet_temperature": { "ts": 1770100000, "vi": 14 },
+            "pump_mode": { "ts": 1770100000, "vi": 1 },
+            "pump_on_off": { "ts": 1770100000, "vi": 0 },
+            "pump_state": { "ts": 1770100000, "vi": 1 },
+            "rf_link_quality": { "ts": 1770100300, "vi": 80 },
+            "turn_on_pressure": { "ts": 1770100000, "vf": 2.0 },
+            "valve_error_1": { "ts": 1770100000, "vi": 0 },
+            "watering_timer_1": { "ts": 1770100000, "vi": 0 }
+          }
+        }
+      },
+      "3034F8EE901EE84000003333": {
+        "connection_status": { "0": { "online": { "ts": 1770100000, "vb": true } } },
+        "device": {
+          "0": {
+            "device_type": { "ts": 1770100000, "vs": "Robotics Lawnmower" },
+            "model_number": { "ts": 1770100000, "vs": "6146" },
+            "serial_number": { "ts": 1770100000, "vs": "00033333" },
+            "software_version": { "ts": 1770100000, "vs": "2.5.0" }
+          }
+        },
+        "lemonbeat": {
+          "0": {
+            "battery_level": { "ts": 1770100400, "vi": 95 },
+            "charging_cycles": { "ts": 1770100000, "vi": 230 },
+            "collisions": { "ts": 1770100000, "vi": 1520 },
+            "cutting_time": { "ts": 1770100000, "vi": 412 },
+            "last_error_code": { "ts": 1770100000, "vi": 0 },
+            "mower_timer": { "ts": 1770100000, "vi": 0 },
+            "rf_link_quality": { "ts": 1770100000, "vi": 70 },
+            "status": { "ts": 1770100400, "vi": 7 }
+          }
+        }
+      },
+      "3034F8EE9020F94000004444": {
+        "connection_status": { "0": { "online": { "ts": 1770100000, "vb": true } } },
+        "device": {
+          "0": {
+            "device_type": { "ts": 1770100000, "vs": "Robotics Lawnmower" },
+            "model_number": { "ts": 1770100000, "vs": "53988" },
+            "serial_number": { "ts": 1770100000, "vs": "00044444" },
+            "software_version": { "ts": 1770100000, "vs": "2.6.0" }
+          }
+        },
+        "lemonbeat": {
+          "0": {
+            "battery_level": { "ts": 1770100000, "vi": 60 },
+            "last_error_code": { "ts": 1770100000, "vi": 0 },
+            "rf_link_quality": { "ts": 1770100000, "vi": 100 },
+            "status": { "ts": 1770100000, "vi": 1 }
+          }
+        }
+      }
+    },
+    "request_id": "6a1f0c3e-2b44-4f0e-8d0a-0f6f3c5b1a11",
+    "success": true
+  },
+  {
+    "entity": { "path": "devices", "service": "lwm2mserver" },
+    "payload": {
+      "3034F8319C02C1C000005555": {
+        "connection_status": { "0": { "online": { "ts": 1770100000, "vb": true } } },
+        "connectivity_monitoring": { "0": { "link_quality": { "ts": 1770100000, "vi": 2 }, "radio_signal_strength": { "ts": 1770100000, "vi": -67 } } },
+        "device": {
+          "0": {
+            "battery_level": { "ts": 1770100500, "vi": 85 },
+            "device_type": { "ts": 1770100000, "vs": "Mower CBT11" },
+            "model_number": { "ts": 1770100000, "vs": "488" },
+            "serial_number": { "ts": 1770100000, "vs": "00055555" },
+            "software_version": { "ts": 1770100000, "vs": "36.12" }
+          }
+        },
+        "mower_app": {
+          "0": {
+            "activity": { "ts": 1770100500, "vi": 5 },
+            "error": { "ts": 1770100000, "vi": 0 },
+            "state": { "ts": 1770100500, "vi": 7 }
+          }
+        }
+      }
+    },
+    "request_id": "6a1f0c3e-2b44-4f0e-8d0a-0f6f3c5b1a12",
+    "success": true
+  }
+]
