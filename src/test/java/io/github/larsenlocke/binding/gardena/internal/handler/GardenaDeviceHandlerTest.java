@@ -198,6 +198,17 @@ class GardenaDeviceHandlerTest {
     }
 
     @Test
+    void commandForADeviceTheGatewayLostPutsTheSwitchBack() {
+        GardenaDeviceHandler handler = irrigationControl(20);
+        harness.devices.remove(IRRIGATION_CONTROL);
+        harness.stateUpdates.clear();
+        handler.handleCommand(channel(handler, "valve1#state"), OnOffType.ON);
+        assertTrue(harness.sentRequests.isEmpty());
+        assertEquals(List.of("valve1#state"), harness.stateUpdates);
+        assertEquals(OnOffType.OFF, harness.state("valve1#state"));
+    }
+
+    @Test
     void onlyChangedValuesArePublishedAgain() {
         GardenaDeviceHandler handler = irrigationControl(20);
         harness.stateUpdates.clear();

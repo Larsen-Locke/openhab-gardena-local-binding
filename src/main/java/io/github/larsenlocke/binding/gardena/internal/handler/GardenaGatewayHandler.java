@@ -327,12 +327,12 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
         updateStatus(ThingStatus.ONLINE);
 
         for (String deviceId : vanished) {
-            for (GardenaDeviceHandler handler : findHandlers(deviceId)) {
+            for (GardenaThingHandler handler : findHandlers(deviceId)) {
                 handler.deviceRemoved();
             }
         }
         for (GardenaDevice device : reported.values()) {
-            for (GardenaDeviceHandler handler : findHandlers(device.getId())) {
+            for (GardenaThingHandler handler : findHandlers(device.getId())) {
                 handler.deviceUpdated(device);
             }
         }
@@ -366,7 +366,7 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
                 logger.debug("Device {} was removed from the gateway", deviceId);
                 devices.remove(deviceId);
                 updated.remove(device);
-                for (GardenaDeviceHandler handler : findHandlers(deviceId)) {
+                for (GardenaThingHandler handler : findHandlers(deviceId)) {
                     handler.deviceRemoved();
                 }
             } else {
@@ -375,7 +375,7 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
             }
         }
         for (GardenaDevice device : updated) {
-            for (GardenaDeviceHandler handler : findHandlers(device.getId())) {
+            for (GardenaThingHandler handler : findHandlers(device.getId())) {
                 handler.deviceUpdated(device);
             }
         }
@@ -391,10 +391,10 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
                 TimeUnit.SECONDS);
     }
 
-    private List<GardenaDeviceHandler> findHandlers(String deviceId) {
-        List<GardenaDeviceHandler> handlers = new ArrayList<>();
+    private List<GardenaThingHandler> findHandlers(String deviceId) {
+        List<GardenaThingHandler> handlers = new ArrayList<>();
         for (Thing child : getThing().getThings()) {
-            if (child.getHandler() instanceof GardenaDeviceHandler handler && deviceId.equals(handler.getDeviceId())) {
+            if (child.getHandler() instanceof GardenaThingHandler handler && deviceId.equals(handler.getDeviceId())) {
                 handlers.add(handler);
             }
         }
