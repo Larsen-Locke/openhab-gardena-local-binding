@@ -199,6 +199,32 @@
       <version>${jetty.version}</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+      <!-- Stands in for openHAB's callback, the bridge and the gateway handler in the thing handler tests -->
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>5.23.0</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <!-- The units implementation openHAB core ${openhab.core.version} ships; needed to create QuantityTypes -->
+      <groupId>tech.units</groupId>
+      <artifactId>indriya</artifactId>
+      <version>2.2.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>si.uom</groupId>
+      <artifactId>si-units</artifactId>
+      <version>2.2.3</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>si.uom</groupId>
+      <artifactId>si-quantity</artifactId>
+      <version>2.2.3</version>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
 
   <build>
