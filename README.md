@@ -179,8 +179,8 @@ A `REFRESH` answers with the last reported value, since there is nothing to poll
 | `operating-mode`     | String                    | RW         | `scheduled` (runs when switched on or by a schedule) or `automatic` (starts when the outlet pressure drops). |
 | `turn-on-pressure`   | Number:Pressure           | RW         | In automatic mode the pump starts below this pressure, 0 to 10 bar in steps of 0.1 bar.      |
 | `dripping-alert`     | String                    | RW         | When a small leakage is reported: `standard` (after 60 min), `sensitive` (after 2 min) or `off`. |
-| `pump-state`         | String                    | R          | `starting`, `water-in-pump`, `no-water-in-pump`, `flow` or `no-flow`.                        |
-| `outlet-pressure`    | Number:Pressure           | R          | Water pressure at the outlet.                                                                |
+| `pump-state`         | String                    | R          | What the pump found while running: `starting`, `water-in-pump`, `no-water-in-pump`, `flow` or `no-flow`; `UNDEF` while the motor stands. |
+| `outlet-pressure`    | Number:Pressure           | R          | Water pressure at the outlet, as last reported by the pump.                                  |
 | `outlet-temperature` | Number:Temperature        | R          | Water temperature at the outlet.                                                             |
 | `flow-rate`          | Number:VolumetricFlowRate | R          | Water flow while the pump runs, `0` while it stands.                                         |
 | `flow-total`         | Number:Volume             | R          | Water pumped over the pump's lifetime.                                                       |
@@ -280,7 +280,7 @@ end
 
 | Status                                                   | Meaning                                                                                 |
 |----------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| "The gateway refused the connection"                     | The WebSocket API is not enabled; see [Preparing the Gateway](#preparing-the-gateway). |
+| "The gateway refused the connection"                     | The WebSocket API is not enabled; see [Preparing the Gateway](#preparing-the-gateway). It is off by default and its switch is hidden in the gateway's advanced options. |
 | "The gateway rejected the password"                      | Wrong password; it is the first block of the gateway ID on the back of the gateway.    |
 | "Lost the connection to the gateway (...), retrying..."  | Network problem or gateway restart; the binding reconnects with a growing delay of 5 to 60 seconds. |
 

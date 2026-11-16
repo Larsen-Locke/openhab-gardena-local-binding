@@ -31,6 +31,7 @@ import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
+import org.openhab.core.types.UnDefType;
 
 import com.google.gson.JsonObject;
 
@@ -85,7 +86,7 @@ class GardenaPumpHandlerTest {
         harness.assertQuantity(30, Units.MINUTE, CHANNEL_DURATION);
         assertEquals(new StringType("scheduled"), harness.state(CHANNEL_OPERATING_MODE));
         assertEquals(new StringType("standard"), harness.state(CHANNEL_DRIPPING_ALERT));
-        assertEquals(new StringType("water-in-pump"), harness.state(CHANNEL_PUMP_STATE));
+        assertEquals(UnDefType.UNDEF, harness.state(CHANNEL_PUMP_STATE), "the motor stands");
         harness.assertQuantity(2.0, Units.BAR, CHANNEL_TURN_ON_PRESSURE);
         harness.assertQuantity(0.2, Units.BAR, CHANNEL_OUTLET_PRESSURE);
         harness.assertQuantity(14, SIUnits.CELSIUS, CHANNEL_OUTLET_TEMPERATURE);
@@ -104,6 +105,17 @@ class GardenaPumpHandlerTest {
         update(handler, "{\"pump_on_off\": {\"ts\": 1770101000, \"vi\": 1}}");
         assertEquals(OnOffType.ON, harness.state(CHANNEL_STATE));
         harness.assertQuantity(100, GardenaPumpHandler.LITRE_PER_HOUR, CHANNEL_FLOW_RATE);
+    }
+
+    @Test
+    void pumpStateIsUndefinedOnceTheMotorStops() {
+        GardenaPumpHandler handler = pump(30);
+        update(handler,
+                "{\"pump_on_off\": {\"ts\": 1770101000, \"vi\": 1}, \"pump_state\": {\"ts\": 1770101005, \"vi\": 3}}");
+        assertEquals(new StringType("flow"), harness.state(CHANNEL_PUMP_STATE));
+
+        update(handler, "{\"pump_on_off\": {\"ts\": 1770101600, \"vi\": 0}}");
+        assertEquals(UnDefType.UNDEF, harness.state(CHANNEL_PUMP_STATE));
     }
 
     @Test

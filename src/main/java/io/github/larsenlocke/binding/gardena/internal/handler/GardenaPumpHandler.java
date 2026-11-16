@@ -32,6 +32,7 @@ import org.openhab.core.thing.ThingStatus;
 import org.openhab.core.thing.ThingStatusDetail;
 import org.openhab.core.types.Command;
 import org.openhab.core.types.State;
+import org.openhab.core.types.UnDefType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -193,7 +194,9 @@ public class GardenaPumpHandler extends GardenaThingHandler {
         publish(CHANNEL_DURATION, new QuantityType<>(runSeconds / 60.0, Units.MINUTE));
         publish(CHANNEL_OPERATING_MODE, option(OPERATING_MODES, device.getPumpOperatingMode()));
         publish(CHANNEL_DRIPPING_ALERT, option(DRIPPING_ALERTS, device.getDrippingAlert()));
-        publish(CHANNEL_PUMP_STATE, option(PUMP_STATES, device.getPumpState()));
+        // The pump only updates its state while running; once stopped, the last value would claim water still flows.
+        publish(CHANNEL_PUMP_STATE, Boolean.FALSE.equals(device.isPumpRunning()) ? UnDefType.UNDEF
+                : option(PUMP_STATES, device.getPumpState()));
         publish(CHANNEL_TURN_ON_PRESSURE, quantity(device.getTurnOnPressure(), Units.BAR));
         publish(CHANNEL_OUTLET_PRESSURE, quantity(device.getOutletPressure(), Units.BAR));
         publish(CHANNEL_OUTLET_TEMPERATURE, quantity(device.getOutletTemperature(), SIUnits.CELSIUS));

@@ -562,7 +562,8 @@
 	<channel-type id="pump-state">
 		<item-type>String</item-type>
 		<label>Pump State</label>
-		<description>What the pump last found: whether it holds water and whether water flows.</description>
+		<description>What the pump found while running: whether it holds water and whether water flows. UNDEF while the motor
+			stands, as the pump does not update it then.</description>
 		<tags>
 			<tag>Status</tag>
 			<tag>Info</tag>
@@ -581,7 +582,7 @@
 	<channel-type id="outlet-pressure">
 		<item-type unitHint="bar">Number:Pressure</item-type>
 		<label>Outlet Pressure</label>
-		<description>The water pressure at the pump's outlet.</description>
+		<description>The water pressure at the pump's outlet, as last reported by the pump.</description>
 		<category>Pressure</category>
 		<tags>
 			<tag>Measurement</tag>
