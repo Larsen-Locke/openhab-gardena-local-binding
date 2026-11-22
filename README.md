@@ -23,8 +23,8 @@ It is switched off on the gateway by default; see [Preparing the Gateway](#prepa
 Verified on real hardware so far: a first-generation smart Irrigation Control (19032) and a smart Sensor II (19040) on openHAB 5.2.1.
 The water controls and second-generation devices follow GARDENA's reference implementation but have not been run against real hardware yet.
 
-> **Alpha:** `power-adapter`, `pump` and `mower` are new in 5.2.1.5 and have **not been run against real hardware yet**.
-> They follow GARDENA's reference implementations; feedback with a `TRACE` log (see [Troubleshooting](#troubleshooting)) is very welcome.
+> **New in 5.2.1.6:** `power-adapter` and `pump` have been confirmed working by a user. **`mower` has not been run against real hardware yet.**
+> It follows GARDENA's reference implementations; feedback with a `TRACE` log (see [Troubleshooting](#troubleshooting)) is very welcome.
 
 ## Preparing the Gateway
 
