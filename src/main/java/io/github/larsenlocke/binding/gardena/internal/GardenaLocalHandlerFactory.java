@@ -15,16 +15,13 @@ import static io.github.larsenlocke.binding.gardena.internal.GardenaLocalBinding
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.openhab.core.io.net.http.WebSocketFactory;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.Thing;
 import org.openhab.core.thing.ThingTypeUID;
 import org.openhab.core.thing.binding.BaseThingHandlerFactory;
 import org.openhab.core.thing.binding.ThingHandler;
 import org.openhab.core.thing.binding.ThingHandlerFactory;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import io.github.larsenlocke.binding.gardena.internal.handler.GardenaDeviceHandler;
 import io.github.larsenlocke.binding.gardena.internal.handler.GardenaGatewayHandler;
@@ -41,13 +38,6 @@ import io.github.larsenlocke.binding.gardena.internal.handler.GardenaPumpHandler
 @Component(configurationPid = "binding.gardenalocal", service = ThingHandlerFactory.class)
 public class GardenaLocalHandlerFactory extends BaseThingHandlerFactory {
 
-    private final WebSocketFactory webSocketFactory;
-
-    @Activate
-    public GardenaLocalHandlerFactory(@Reference WebSocketFactory webSocketFactory) {
-        this.webSocketFactory = webSocketFactory;
-    }
-
     @Override
     public boolean supportsThingType(ThingTypeUID thingTypeUID) {
         return THING_TYPE_GATEWAY.equals(thingTypeUID) || DEVICE_THING_TYPES.contains(thingTypeUID);
@@ -57,7 +47,7 @@ public class GardenaLocalHandlerFactory extends BaseThingHandlerFactory {
     protected @Nullable ThingHandler createHandler(Thing thing) {
         ThingTypeUID thingTypeUID = thing.getThingTypeUID();
         if (THING_TYPE_GATEWAY.equals(thingTypeUID) && thing instanceof Bridge bridge) {
-            return new GardenaGatewayHandler(bridge, webSocketFactory);
+            return new GardenaGatewayHandler(bridge);
         }
         if (VALVE_AND_SENSOR_THING_TYPES.contains(thingTypeUID)) {
             return new GardenaDeviceHandler(thing);

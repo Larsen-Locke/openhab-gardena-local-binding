@@ -6,7 +6,7 @@
 
   <groupId>io.github.larsenlocke</groupId>
   <artifactId>io.github.larsenlocke.binding.gardena</artifactId>
-  <version>5.2.1.6</version>
+  <version>5.2.1.7</version>
   <packaging>jar</packaging>
 
   <name>GARDENA Binding (local)</name>
@@ -37,7 +37,7 @@
 
     <!-- Match this to the openHAB version you are running/building against (Pi5: openHAB 5.2.1) -->
     <openhab.core.version>5.2.1</openhab.core.version>
-    <!-- The versions openHAB core ${openhab.core.version} itself ships (org.openhab.core.bom.compile) -->
+    <!-- The versions openHAB core ${openhab.core.version} itself ships (org.openhab.core.bom.compile); Jetty only for the stand-in gateway in the tests -->
     <jetty.version>9.4.58.v20250814</jetty.version>
     <gson.version>2.13.2</gson.version>
     <jmdns.version>3.6.3</jmdns.version>
@@ -110,31 +110,6 @@
       <groupId>org.openhab.core.bundles</groupId>
       <artifactId>org.openhab.core.config.discovery.mdns</artifactId>
       <version>${openhab.core.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <!-- WebSocketFactory: the shared Jetty WebSocket client openHAB manages -->
-      <groupId>org.openhab.core.bundles</groupId>
-      <artifactId>org.openhab.core.io.net</artifactId>
-      <version>${openhab.core.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-client</artifactId>
-      <version>${jetty.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty.websocket</groupId>
-      <artifactId>websocket-api</artifactId>
-      <version>${jetty.version}</version>
-      <scope>provided</scope>
-    </dependency>
-    <dependency>
-      <groupId>org.eclipse.jetty</groupId>
-      <artifactId>jetty-util</artifactId>
-      <version>${jetty.version}</version>
       <scope>provided</scope>
     </dependency>
     <dependency>

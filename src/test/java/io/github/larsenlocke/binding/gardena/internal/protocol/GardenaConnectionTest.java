@@ -17,6 +17,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.time.Duration;
 import java.util.Base64;
 import java.util.List;
@@ -30,16 +31,19 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.jetty.server.HttpConnectionFactory;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.server.SslConnectionFactory;
+import org.eclipse.jetty.util.ssl.SslContextFactory;
 import org.eclipse.jetty.websocket.api.Session;
 import org.eclipse.jetty.websocket.api.WebSocketAdapter;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.eclipse.jetty.websocket.server.WebSocketHandler;
 import org.eclipse.jetty.websocket.servlet.WebSocketServletFactory;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
@@ -52,8 +56,8 @@ import com.google.gson.JsonParser;
  * acknowledges writes with an event, the way the real gateway reports a valve opening.
  *
  * <p>
- * Plain {@code ws://} rather than {@code wss://}: TLS is Jetty's business, the protocol handling is this
- * binding's.
+ * Mostly plain {@code ws://}; {@link #acceptsTheGatewaysSelfSignedCertificate()} covers {@code wss://} with a
+ * self-signed certificate issued to a name that does not match the address, like the real gateway's.
  *
  * @author Larsen-Locke - Initial contribution
  */
@@ -61,19 +65,42 @@ import com.google.gson.JsonParser;
 class GardenaConnectionTest {
 
     private static final String PASSWORD = "1234abcd";
+    private static final String KEYSTORE_PASSWORD = "changeit";
     private static final String VALVE_DEVICE = "3034F8EE90126D400001737D";
 
     private @Nullable Server server;
-    private @Nullable WebSocketClient client;
     private @Nullable GardenaConnection connection;
     private final ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(2);
     private final AtomicInteger connectionsAccepted = new AtomicInteger();
     private volatile boolean closeRightAway;
+    private volatile boolean bigEvent;
+    private static final int BIG_EVENT_PADDING = 1024 * 1024;
     private int port;
+
+    @TempDir
+    @Nullable
+    Path tempDir;
 
     @BeforeEach
     void startGateway() throws Exception {
-        Server newServer = new Server(0);
+        startServer(false);
+    }
+
+    private void startServer(boolean tls) throws Exception {
+        Server newServer = new Server();
+        ServerConnector connector;
+        if (tls) {
+            SslContextFactory.Server ssl = new SslContextFactory.Server();
+            ssl.setKeyStorePath(selfSignedKeyStore().toString());
+            ssl.setKeyStorePassword(KEYSTORE_PASSWORD);
+            ssl.setKeyStoreType("PKCS12");
+            connector = new ServerConnector(newServer, new SslConnectionFactory(ssl, "http/1.1"),
+                    new HttpConnectionFactory());
+        } else {
+            connector = new ServerConnector(newServer);
+        }
+        connector.setPort(0);
+        newServer.addConnector(connector);
         newServer.setHandler(new WebSocketHandler() {
             @Override
             public void configure(@Nullable WebSocketServletFactory factory) {
@@ -111,13 +138,29 @@ class GardenaConnectionTest {
         scheduler.shutdownNow();
     }
 
+    /** A key pair for the name {@code gardena-gateway}, which the test connects to as 127.0.0.1. */
+    private Path selfSignedKeyStore() throws Exception {
+        Path keyStore = Objects.requireNonNull(tempDir).resolve("gateway.p12");
+        Process keytool = new ProcessBuilder(Path.of(System.getProperty("java.home"), "bin", "keytool").toString(),
+                "-genkeypair", "-alias", "gateway", "-keyalg", "RSA", "-keysize", "2048", "-validity", "2", "-dname",
+                "CN=gardena-gateway", "-ext", "SAN=dns:gardena-gateway", "-storetype", "PKCS12", "-keystore",
+                keyStore.toString(), "-storepass", KEYSTORE_PASSWORD, "-keypass", KEYSTORE_PASSWORD)
+                .redirectErrorStream(true).start();
+        String output = new String(keytool.getInputStream().readAllBytes(), StandardCharsets.UTF_8);
+        assertTrue(keytool.waitFor(60, TimeUnit.SECONDS), "keytool finished");
+        assertEquals(0, keytool.exitValue(), output);
+        return keyStore;
+    }
+
     private RecordingListener connect(String password) {
+        return connect(password, "ws");
+    }
+
+    private RecordingListener connect(String password, String scheme) {
         RecordingListener listener = new RecordingListener();
-        WebSocketClient newClient = new WebSocketClient();
-        client = newClient;
         String authorization = "Basic "
                 + Base64.getEncoder().encodeToString(("_:" + password).getBytes(StandardCharsets.UTF_8));
-        GardenaConnection newConnection = new GardenaConnection(newClient, URI.create("ws://127.0.0.1:" + port + "/"),
+        GardenaConnection newConnection = new GardenaConnection(URI.create(scheme + "://127.0.0.1:" + port + "/"),
                 authorization, listener, scheduler);
         connection = newConnection;
         newConnection.start();
@@ -174,9 +217,32 @@ class GardenaConnectionTest {
     }
 
     @Test
+    void acceptsTheGatewaysSelfSignedCertificate() throws Exception {
+        Objects.requireNonNull(server).stop();
+        startServer(true);
+        RecordingListener listener = connect(PASSWORD, "wss");
+        assertTrue(listener.connected.await(10, TimeUnit.SECONDS), "connected over TLS");
+        List<GardenaMessage> replies = Objects.requireNonNull(connection)
+                .send(GardenaRequests.discovery(), Duration.ofSeconds(5)).get(10, TimeUnit.SECONDS);
+        assertTrue(replies.get(0).getPayload().has(VALVE_DEVICE));
+    }
+
+    @Test
+    void largeFramesArriveWhole() throws Exception {
+        RecordingListener listener = connect(PASSWORD);
+        assertTrue(listener.connected.await(10, TimeUnit.SECONDS), "connected");
+        // Far beyond one network read and Jetty's former 64 KiB default: the JDK client hands it over in parts.
+        bigEvent = true;
+        Objects.requireNonNull(connection).send(GardenaRequests.discovery(), Duration.ofSeconds(5)).get(10,
+                TimeUnit.SECONDS);
+        assertTrue(listener.messageReceived.await(10, TimeUnit.SECONDS), "large event received");
+        assertEquals(BIG_EVENT_PADDING, listener.messages.get(0).getPayload().get("padding").getAsString().length());
+    }
+
+    @Test
     void sendFailsWhenNotConnected() {
-        GardenaConnection notStarted = new GardenaConnection(new WebSocketClient(),
-                URI.create("ws://127.0.0.1:" + port + "/"), "Basic x", new RecordingListener(), scheduler);
+        GardenaConnection notStarted = new GardenaConnection(URI.create("ws://127.0.0.1:" + port + "/"), "Basic x",
+                new RecordingListener(), scheduler);
         assertTrue(notStarted.send(GardenaRequests.discovery(), Duration.ofSeconds(1)).isCompletedExceptionally());
     }
 
@@ -231,6 +297,18 @@ class GardenaConnectionTest {
                 }
                 Session session = Objects.requireNonNull(getSession());
                 session.getRemote().sendString(replies.toString());
+                if (bigEvent) {
+                    JsonObject payload = new JsonObject();
+                    payload.addProperty("padding", "x".repeat(BIG_EVENT_PADDING));
+                    JsonObject eventEntity = new JsonObject();
+                    eventEntity.addProperty("device", VALVE_DEVICE);
+                    eventEntity.addProperty("path", "lemonbeat/0");
+                    JsonObject event = new JsonObject();
+                    event.add("entity", eventEntity);
+                    event.addProperty("op", "update");
+                    event.add("payload", payload);
+                    events.add(event);
+                }
                 if (!events.isEmpty()) {
                     session.getRemote().sendString(events.toString());
                 }

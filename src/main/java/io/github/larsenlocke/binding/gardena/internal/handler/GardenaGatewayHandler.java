@@ -35,9 +35,6 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jetty.util.ssl.SslContextFactory;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
-import org.openhab.core.io.net.http.WebSocketFactory;
 import org.openhab.core.thing.Bridge;
 import org.openhab.core.thing.ChannelUID;
 import org.openhab.core.thing.Thing;
@@ -87,10 +84,8 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
      * does not know. The device list is fetched again once that burst is over rather than once per event.
      */
     private static final long UNKNOWN_DEVICE_DEBOUNCE_SECONDS = 3;
-    private static final String WEBSOCKET_CONSUMER = "gardenalocal";
 
     private final Logger logger = LoggerFactory.getLogger(GardenaGatewayHandler.class);
-    private final WebSocketFactory webSocketFactory;
 
     private volatile @Nullable GardenaConnection connection;
     private volatile @Nullable DeviceListListener deviceListListener;
@@ -98,9 +93,8 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
     private @Nullable ScheduledFuture<?> deviceListJob;
     private volatile @Nullable ScheduledFuture<?> refreshJob;
 
-    public GardenaGatewayHandler(Bridge bridge, WebSocketFactory webSocketFactory) {
+    public GardenaGatewayHandler(Bridge bridge) {
         super(bridge);
-        this.webSocketFactory = webSocketFactory;
     }
 
     @Override
@@ -143,13 +137,6 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
 
         updateStatus(ThingStatus.UNKNOWN);
 
-        // The gateway serves a self-signed certificate issued to its own name, which no trust store knows and
-        // which does not match an IP address. The password authenticates this side; nothing authenticates the
-        // gateway, the same trade-off GARDENA's own Home Assistant integration makes.
-        SslContextFactory.Client sslContextFactory = new SslContextFactory.Client(true);
-        sslContextFactory.setEndpointIdentificationAlgorithm(null);
-        WebSocketClient client = webSocketFactory.createWebSocketClient(WEBSOCKET_CONSUMER, sslContextFactory);
-
         String credentials = "_:" + config.password.trim();
         String authorization = "Basic "
                 + Base64.getEncoder().encodeToString(credentials.getBytes(StandardCharsets.UTF_8));
@@ -157,7 +144,7 @@ public class GardenaGatewayHandler extends BaseBridgeHandler implements GardenaC
         // The scheduler inherited from BaseThingHandler, which openHAB owns: this handler instance is reused
         // across a config change (dispose() then initialize()), so a private executor shut down in dispose()
         // would be gone for the second initialize().
-        GardenaConnection newConnection = new GardenaConnection(client, uri, authorization, this, scheduler);
+        GardenaConnection newConnection = new GardenaConnection(uri, authorization, this, scheduler);
         connection = newConnection;
         newConnection.start();
 

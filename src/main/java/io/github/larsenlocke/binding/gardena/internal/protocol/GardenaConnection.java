@@ -11,31 +11,38 @@
  */
 package io.github.larsenlocke.binding.gardena.internal.protocol;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.Socket;
 import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.WebSocket;
+import java.net.http.WebSocketHandshakeException;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
+import java.security.GeneralSecurityException;
+import java.security.cert.X509Certificate;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.function.Function;
+
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLEngine;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509ExtendedTrustManager;
 
 import org.eclipse.jdt.annotation.NonNullByDefault;
 import org.eclipse.jdt.annotation.Nullable;
-import org.eclipse.jetty.websocket.api.Session;
-import org.eclipse.jetty.websocket.api.UpgradeException;
-import org.eclipse.jetty.websocket.api.WebSocketListener;
-import org.eclipse.jetty.websocket.api.WebSocketPingPongListener;
-import org.eclipse.jetty.websocket.client.ClientUpgradeRequest;
-import org.eclipse.jetty.websocket.client.WebSocketClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,18 +51,22 @@ import org.slf4j.LoggerFactory;
  * replies to the requests they answer; everything else that arrives is handed to the {@link Listener}.
  *
  * <p>
- * Every connection attempt gets a {@link Socket} object of its own, and only the current one's callbacks count.
- * A late callback from a socket that has already been given up on - a close or error racing a reconnect - is
+ * Uses the JDK's own WebSocket client ({@code java.net.http}) rather than the Jetty client openHAB provides: the
+ * binding then has no Jetty imports at all, so the same bundle runs on openHAB 5.2 (Jetty 9) and 5.3 (Jetty 12).
+ *
+ * <p>
+ * Every connection attempt gets a {@link Endpoint} object of its own, and only the current one's callbacks count.
+ * A late callback from an attempt that has already been given up on - a close or error racing a reconnect - is
  * therefore ignored instead of tearing down its successor.
  *
  * @author Larsen-Locke - Initial contribution
  */
 @NonNullByDefault
-// Sockets are compared by identity on purpose: the question is always "is this still the current attempt?"
+// Endpoints are compared by identity on purpose: the question is always "is this still the current attempt?"
 @SuppressWarnings("PMD.CompareObjectsWithEquals")
 public class GardenaConnection {
 
-    /** Receives what happens on the connection. Called from the WebSocket's own threads. */
+    /** Receives what happens on the connection. Called from the WebSocket client's own threads. */
     public interface Listener {
         /** The WebSocket is open; nothing has been exchanged yet. */
         void onConnected();
@@ -76,15 +87,17 @@ public class GardenaConnection {
     private static final long STALE_AFTER_NANOS = TimeUnit.SECONDS.toNanos(3 * KEEPALIVE_INTERVAL_SECONDS);
     /** Delays between reconnect attempts, the last one repeating. */
     private static final long[] RECONNECT_DELAYS_SECONDS = { 5, 10, 20, 40, 60 };
+    /** How long a polite close may take before the connection is simply dropped. */
+    private static final long CLOSE_TIMEOUT_SECONDS = 2;
     /**
-     * The device-list reply carries every device's full data tree in one frame, well beyond Jetty's 64 KiB
-     * default once a few devices are paired.
+     * The device-list reply carries every device's full data tree in one frame. The JDK client has no size limit
+     * of its own; this only stops a broken peer from filling the memory with one endless message.
      */
     private static final int MAX_MESSAGE_SIZE = 8 * 1024 * 1024;
 
     private final Logger logger = LoggerFactory.getLogger(GardenaConnection.class);
 
-    private final WebSocketClient client;
+    private final HttpClient client;
     private final URI uri;
     /** The complete Authorization header value. Contains the password - never log it. */
     private final String authorization;
@@ -94,26 +107,22 @@ public class GardenaConnection {
     private final Object lock = new Object();
     // All guarded by lock.
     private boolean running;
-    private @Nullable Socket currentSocket;
-    private @Nullable Session session;
+    private @Nullable Endpoint currentEndpoint;
+    private @Nullable WebSocket webSocket;
     private @Nullable ScheduledFuture<?> connectJob;
     private @Nullable ScheduledFuture<?> keepaliveJob;
     private int failedAttempts;
 
-    /** Serializes writes: Jetty's blocking send refuses a second message while one is still going out. */
-    private final Object sendLock = new Object();
     private final Map<String, PendingFrame> pendingReplies = new ConcurrentHashMap<>();
     private volatile long lastReceivedNanos;
 
-    public GardenaConnection(WebSocketClient client, URI uri, String authorization, Listener listener,
-            ScheduledExecutorService scheduler) {
-        this.client = client;
+    public GardenaConnection(URI uri, String authorization, Listener listener, ScheduledExecutorService scheduler) {
         this.uri = uri;
         this.authorization = authorization;
         this.listener = listener;
         this.scheduler = scheduler;
-        client.getPolicy().setMaxTextMessageSize(MAX_MESSAGE_SIZE);
-        client.getPolicy().setMaxBinaryMessageSize(MAX_MESSAGE_SIZE);
+        this.client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS))
+                .sslContext(trustingSslContext()).build();
     }
 
     public void start() {
@@ -124,7 +133,7 @@ public class GardenaConnection {
         }
     }
 
-    /** Closes the connection for good and stops the WebSocket client, which this connection owns. */
+    /** Closes the connection for good and shuts down the HTTP client, which this connection owns. */
     public void stop() {
         synchronized (lock) {
             running = false;
@@ -132,16 +141,13 @@ public class GardenaConnection {
             connectJob = null;
             cancel(keepaliveJob);
             keepaliveJob = null;
-            currentSocket = null;
-            closeQuietly(session);
-            session = null;
+            currentEndpoint = null;
+            closeQuietly(webSocket);
+            webSocket = null;
         }
         failPendingReplies("connection closed");
-        try {
-            client.stop();
-        } catch (Exception e) {
-            logger.debug("Failed to stop the WebSocket client: {}", e.getMessage());
-        }
+        // Orderly: lets the close above go out; the client's threads end once nothing is left to do.
+        client.shutdown();
     }
 
     /**
@@ -157,19 +163,18 @@ public class GardenaConnection {
 
     /** Drops the current connection and reconnects, e.g. because the gateway stopped answering requests. */
     public void reconnect(String reason) {
-        Socket socket;
+        Endpoint endpoint;
         synchronized (lock) {
-            socket = currentSocket;
+            endpoint = currentEndpoint;
         }
-        if (socket != null) {
-            connectionLost(socket, reason);
+        if (endpoint != null) {
+            connectionLost(endpoint, reason);
         }
     }
 
     public boolean isConnected() {
         synchronized (lock) {
-            Session current = session;
-            return current != null && current.isOpen();
+            return isOpen(webSocket);
         }
     }
 
@@ -180,11 +185,13 @@ public class GardenaConnection {
      * {@link GardenaMessage#isSuccess()}.
      */
     public CompletableFuture<List<GardenaMessage>> send(GardenaRequests.Frame frame, Duration timeout) {
-        Session current;
+        Endpoint endpoint;
+        WebSocket current;
         synchronized (lock) {
-            current = session;
+            endpoint = currentEndpoint;
+            current = webSocket;
         }
-        if (current == null || !current.isOpen()) {
+        if (endpoint == null || current == null || !isOpen(current)) {
             return CompletableFuture.failedFuture(new IOException("not connected to the gateway"));
         }
 
@@ -198,56 +205,53 @@ public class GardenaConnection {
             }
         });
 
-        try {
-            synchronized (sendLock) {
-                current.getRemote().sendString(frame.json());
+        endpoint.enqueue(current, ws -> ws.sendText(frame.json(), true)).whenComplete((ws, error) -> {
+            if (error != null) {
+                pending.future.completeExceptionally(error);
+            } else {
+                logger.trace("Sent to gateway: {}", frame.json());
             }
-            logger.trace("Sent to gateway: {}", frame.json());
-        } catch (IOException | RuntimeException e) {
-            pending.future.completeExceptionally(e);
-        }
+        });
         return pending.future;
     }
 
     private void connect() {
-        Socket socket = new Socket();
+        Endpoint endpoint = new Endpoint();
         synchronized (lock) {
             if (!running) {
                 return;
             }
-            currentSocket = socket;
+            currentEndpoint = endpoint;
         }
 
-        Future<Session> connecting = null;
+        CompletableFuture<WebSocket> connecting = null;
         try {
-            if (!client.isStarted()) {
-                client.start();
-            }
-            ClientUpgradeRequest request = new ClientUpgradeRequest();
-            request.setHeader("Authorization", authorization);
             logger.debug("Connecting to GARDENA smart Gateway at {}", uri);
-            connecting = client.connect(socket, uri, request);
-            connecting.get(CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
+            connecting = client.newWebSocketBuilder().header("Authorization", authorization)
+                    .connectTimeout(Duration.ofSeconds(CONNECT_TIMEOUT_SECONDS)).buildAsync(uri, endpoint);
+            // The TLS and WebSocket handshakes come after the TCP connect the timeout above covers.
+            connecting.get(2 * CONNECT_TIMEOUT_SECONDS, TimeUnit.SECONDS);
         } catch (ExecutionException e) {
-            if (isUnauthorized(e)) {
-                authenticationFailed(socket);
+            Throwable cause = e.getCause() != null ? e.getCause() : e;
+            if (isUnauthorized(cause)) {
+                authenticationFailed(endpoint);
             } else {
-                connectionLost(socket, describe(e.getCause() != null ? e.getCause() : e));
+                connectionLost(endpoint, describe(cause));
             }
         } catch (TimeoutException e) {
             connecting.cancel(true);
-            connectionLost(socket, "no answer within " + CONNECT_TIMEOUT_SECONDS + " s");
+            connectionLost(endpoint, "no answer within " + 2 * CONNECT_TIMEOUT_SECONDS + " s");
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
-        } catch (Exception e) {
-            // client.start() and client.connect() declare plain Exception/IOException.
-            connectionLost(socket, describe(e));
+        } catch (RuntimeException e) {
+            // e.g. a header or URI the builder refuses
+            connectionLost(endpoint, describe(e));
         }
     }
 
     private static boolean isUnauthorized(Throwable error) {
         for (Throwable cause = error; cause != null; cause = cause.getCause()) {
-            if (cause instanceof UpgradeException upgrade && upgrade.getResponseStatusCode() == 401) {
+            if (cause instanceof WebSocketHandshakeException handshake && handshake.getResponse().statusCode() == 401) {
                 return true;
             }
         }
@@ -259,58 +263,56 @@ public class GardenaConnection {
         return message == null || message.isBlank() ? error.getClass().getSimpleName() : message;
     }
 
-    private void opened(Socket socket, Session newSession) {
+    private void opened(Endpoint endpoint, WebSocket newWebSocket) {
         synchronized (lock) {
-            if (socket != currentSocket || !running) {
-                closeQuietly(newSession);
+            if (endpoint != currentEndpoint || !running) {
+                closeQuietly(newWebSocket);
                 return;
             }
-            session = newSession;
+            webSocket = newWebSocket;
             lastReceivedNanos = System.nanoTime();
             cancel(keepaliveJob);
-            keepaliveJob = scheduler.scheduleWithFixedDelay(() -> keepalive(socket), KEEPALIVE_INTERVAL_SECONDS,
+            keepaliveJob = scheduler.scheduleWithFixedDelay(() -> keepalive(endpoint), KEEPALIVE_INTERVAL_SECONDS,
                     KEEPALIVE_INTERVAL_SECONDS, TimeUnit.SECONDS);
         }
         logger.debug("Connected to GARDENA smart Gateway at {}", uri);
         listener.onConnected();
     }
 
-    private void keepalive(Socket socket) {
-        Session current;
+    private void keepalive(Endpoint endpoint) {
+        WebSocket current;
         synchronized (lock) {
-            if (socket != currentSocket) {
+            if (endpoint != currentEndpoint) {
                 return;
             }
-            current = session;
+            current = webSocket;
         }
         if (current == null) {
             return;
         }
         if (System.nanoTime() - lastReceivedNanos > STALE_AFTER_NANOS) {
-            connectionLost(socket,
+            connectionLost(endpoint,
                     "no data from the gateway for " + TimeUnit.NANOSECONDS.toSeconds(STALE_AFTER_NANOS) + " s");
             return;
         }
-        try {
-            synchronized (sendLock) {
-                current.getRemote().sendPing(ByteBuffer.allocate(0));
+        endpoint.enqueue(current, ws -> ws.sendPing(ByteBuffer.allocate(0))).whenComplete((ws, error) -> {
+            if (error != null) {
+                connectionLost(endpoint, "keepalive failed: " + describe(error));
             }
-        } catch (IOException | RuntimeException e) {
-            connectionLost(socket, "keepalive failed: " + describe(e));
-        }
+        });
     }
 
-    private void connectionLost(Socket socket, String reason) {
+    private void connectionLost(Endpoint endpoint, String reason) {
         long delay;
         synchronized (lock) {
-            if (socket != currentSocket) {
+            if (endpoint != currentEndpoint) {
                 return;
             }
-            currentSocket = null;
+            currentEndpoint = null;
             cancel(keepaliveJob);
             keepaliveJob = null;
-            closeQuietly(session);
-            session = null;
+            closeQuietly(webSocket);
+            webSocket = null;
             if (!running) {
                 return;
             }
@@ -323,21 +325,21 @@ public class GardenaConnection {
         listener.onDisconnected(reason);
     }
 
-    private void authenticationFailed(Socket socket) {
+    private void authenticationFailed(Endpoint endpoint) {
         synchronized (lock) {
-            if (socket != currentSocket) {
+            if (endpoint != currentEndpoint) {
                 return;
             }
-            currentSocket = null;
+            currentEndpoint = null;
             // Retrying the same rejected password achieves nothing but a stream of failed logins on the gateway.
             running = false;
         }
         listener.onAuthenticationFailed();
     }
 
-    private void received(Socket socket, String text) {
+    private void received(Endpoint endpoint, String text) {
         synchronized (lock) {
-            if (socket != currentSocket) {
+            if (endpoint != currentEndpoint) {
                 return;
             }
         }
@@ -381,13 +383,44 @@ public class GardenaConnection {
         }
     }
 
-    private void closeQuietly(@Nullable Session toClose) {
-        if (toClose != null) {
-            try {
-                toClose.close();
-            } catch (RuntimeException e) {
-                logger.debug("Failed to close the WebSocket session: {}", e.getMessage());
-            }
+    private static boolean isOpen(@Nullable WebSocket candidate) {
+        return candidate != null && !candidate.isOutputClosed() && !candidate.isInputClosed();
+    }
+
+    /** Says goodbye if possible and drops the connection after {@link #CLOSE_TIMEOUT_SECONDS} at the latest. */
+    private void closeQuietly(@Nullable WebSocket toClose) {
+        if (toClose == null) {
+            return;
+        }
+        if (toClose.isOutputClosed()) {
+            toClose.abort();
+            return;
+        }
+        try {
+            toClose.sendClose(WebSocket.NORMAL_CLOSURE, "").orTimeout(CLOSE_TIMEOUT_SECONDS, TimeUnit.SECONDS)
+                    .whenComplete((ws, error) -> toClose.abort());
+        } catch (RuntimeException e) {
+            logger.debug("Failed to close the WebSocket: {}", e.getMessage());
+            toClose.abort();
+        }
+    }
+
+    /**
+     * The gateway serves a self-signed certificate issued to its own name, which no trust store knows and which
+     * does not match an IP address. The password authenticates this side; nothing authenticates the gateway, the
+     * same trade-off GARDENA's own Home Assistant integration makes.
+     *
+     * <p>
+     * The trust manager must be an {@link X509ExtendedTrustManager}: for a plain {@code X509TrustManager} the JDK
+     * adds its own host name check, which the gateway's certificate fails.
+     */
+    private static SSLContext trustingSslContext() {
+        try {
+            SSLContext context = SSLContext.getInstance("TLS");
+            context.init(null, new TrustManager[] { new TrustAnyCertificate() }, null);
+            return context;
+        } catch (GeneralSecurityException e) {
+            throw new IllegalStateException("TLS is not available: " + e.getMessage(), e);
         }
     }
 
@@ -420,35 +453,80 @@ public class GardenaConnection {
         }
     }
 
-    /** The Jetty endpoint for one connection attempt. */
-    private class Socket implements WebSocketListener, WebSocketPingPongListener {
+    /** The WebSocket listener for one connection attempt. */
+    private class Endpoint implements WebSocket.Listener {
+
+        /**
+         * The JDK client allows one outgoing message at a time; a second send while the first is still going out
+         * fails. Every send waits for the one before it, whatever its outcome.
+         */
+        private CompletableFuture<?> lastSend = CompletableFuture.completedFuture(null);
+        private final StringBuilder text = new StringBuilder();
+        private final ByteArrayOutputStream binary = new ByteArrayOutputStream();
+
+        synchronized CompletableFuture<WebSocket> enqueue(WebSocket target,
+                Function<WebSocket, CompletableFuture<WebSocket>> sending) {
+            CompletableFuture<WebSocket> next = lastSend.handle((ignored, error) -> target).thenCompose(sending::apply);
+            lastSend = next;
+            return next;
+        }
 
         @Override
-        public void onWebSocketConnect(@Nullable Session newSession) {
-            if (newSession != null) {
-                opened(this, newSession);
+        public void onOpen(@Nullable WebSocket newWebSocket) {
+            if (newWebSocket != null) {
+                opened(this, newWebSocket);
+                newWebSocket.request(1);
             }
         }
 
         @Override
-        public void onWebSocketText(@Nullable String message) {
-            if (message != null) {
+        public @Nullable CompletionStage<?> onText(@Nullable WebSocket source, @Nullable CharSequence data,
+                boolean last) {
+            if (data != null) {
+                text.append(data);
+            }
+            if (text.length() > MAX_MESSAGE_SIZE) {
+                text.setLength(0);
+                connectionLost(this, "message from the gateway larger than " + MAX_MESSAGE_SIZE + " characters");
+                return null;
+            }
+            if (last) {
+                String message = text.toString();
+                text.setLength(0);
                 process(message);
             }
+            requestNext(source);
+            return null;
         }
 
         @Override
-        public void onWebSocketBinary(byte @Nullable [] payload, int offset, int length) {
-            if (payload != null) {
-                process(new String(payload, offset, length, StandardCharsets.UTF_8));
+        public @Nullable CompletionStage<?> onBinary(@Nullable WebSocket source, @Nullable ByteBuffer data,
+                boolean last) {
+            if (data != null) {
+                byte[] bytes = new byte[data.remaining()];
+                data.get(bytes);
+                binary.writeBytes(bytes);
             }
+            if (binary.size() > MAX_MESSAGE_SIZE) {
+                binary.reset();
+                connectionLost(this, "message from the gateway larger than " + MAX_MESSAGE_SIZE + " bytes");
+                return null;
+            }
+            if (last) {
+                String message = binary.toString(StandardCharsets.UTF_8);
+                binary.reset();
+                process(message);
+            }
+            requestNext(source);
+            return null;
         }
 
-        private void process(String text) {
-            // Nothing that goes wrong with one frame may escape into Jetty and end this connection's message
-            // delivery - the connection would then sit there looking healthy while nothing is processed.
+        private void process(String message) {
+            // Nothing that goes wrong with one frame may escape into the WebSocket client and end this
+            // connection's message delivery - the connection would then sit there looking healthy while nothing
+            // is processed.
             try {
-                received(this, text);
+                received(this, message);
             } catch (RuntimeException e) {
                 logger.warn("Failed to process a message from the GARDENA smart Gateway: {}", e.getMessage());
                 logger.debug("Message processing failure", e);
@@ -456,28 +534,78 @@ public class GardenaConnection {
         }
 
         @Override
-        public void onWebSocketPing(@Nullable ByteBuffer payload) {
+        public @Nullable CompletionStage<?> onPing(@Nullable WebSocket source, @Nullable ByteBuffer message) {
+            // The JDK client answers with a pong by itself.
             lastReceivedNanos = System.nanoTime();
+            requestNext(source);
+            return null;
         }
 
         @Override
-        public void onWebSocketPong(@Nullable ByteBuffer payload) {
+        public @Nullable CompletionStage<?> onPong(@Nullable WebSocket source, @Nullable ByteBuffer message) {
             lastReceivedNanos = System.nanoTime();
+            requestNext(source);
+            return null;
         }
 
         @Override
-        public void onWebSocketClose(int statusCode, @Nullable String reason) {
+        public @Nullable CompletionStage<?> onClose(@Nullable WebSocket source, int statusCode,
+                @Nullable String reason) {
             connectionLost(this, "closed by the gateway (" + statusCode
                     + (reason == null || reason.isBlank() ? "" : ", " + reason) + ")");
+            return null;
         }
 
         @Override
-        public void onWebSocketError(@Nullable Throwable cause) {
-            if (cause != null && isUnauthorized(cause)) {
+        public void onError(@Nullable WebSocket source, @Nullable Throwable error) {
+            if (error != null && isUnauthorized(error)) {
                 authenticationFailed(this);
             } else {
-                connectionLost(this, cause == null ? "unknown error" : describe(cause));
+                connectionLost(this, error == null ? "unknown error" : describe(error));
             }
+        }
+
+        private void requestNext(@Nullable WebSocket source) {
+            if (source != null) {
+                source.request(1);
+            }
+        }
+    }
+
+    /** Accepts whatever certificate the gateway presents - see {@link #trustingSslContext()}. */
+    private static class TrustAnyCertificate extends X509ExtendedTrustManager {
+
+        @Override
+        public void checkClientTrusted(X509Certificate @Nullable [] chain, @Nullable String authType) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate @Nullable [] chain, @Nullable String authType) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate @Nullable [] chain, @Nullable String authType,
+                @Nullable Socket socket) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate @Nullable [] chain, @Nullable String authType,
+                @Nullable Socket socket) {
+        }
+
+        @Override
+        public void checkClientTrusted(X509Certificate @Nullable [] chain, @Nullable String authType,
+                @Nullable SSLEngine engine) {
+        }
+
+        @Override
+        public void checkServerTrusted(X509Certificate @Nullable [] chain, @Nullable String authType,
+                @Nullable SSLEngine engine) {
+        }
+
+        @Override
+        public X509Certificate[] getAcceptedIssuers() {
+            return new X509Certificate[0];
         }
     }
 }
