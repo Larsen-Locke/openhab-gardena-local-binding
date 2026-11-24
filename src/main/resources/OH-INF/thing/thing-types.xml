@@ -16,7 +16,7 @@
 			<parameter name="host" type="text" required="true">
 				<context>network-address</context>
 				<label>Host</label>
-				<description>IP address or host name of the gateway, e.g. 192.168.1.20 or GARDENA-123456.local.</description>
+				<description>IP address or host name of the gateway, e.g. 192.168.0.50 or GARDENA-123456.local.</description>
 			</parameter>
 			<parameter name="password" type="text" required="true">
 				<context>password</context>

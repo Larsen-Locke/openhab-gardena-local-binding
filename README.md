@@ -34,7 +34,7 @@ This is a page served by the gateway itself; the switch is not in the GARDENA ap
 1. **Find the gateway's address.**
    The GARDENA app shows the IP address under "Garden Profile"; your router's device list has it as well.
    The gateway also answers to its name, e.g. `GARDENA-123456.local`.
-2. **Open the page** in a browser on the same network, with `https://` in front: `https://192.168.1.20` or `https://GARDENA-123456.local`.
+2. **Open the page** in a browser on the same network, with `https://` in front: `https://192.168.0.50` or `https://GARDENA-123456.local`.
    The browser warns that the connection is not private, because the gateway uses a self-signed certificate.
    Continue anyway (Chrome/Edge: "Advanced", then "Proceed to ..."; Firefox: "Advanced...", then "Accept the Risk and Continue").
 3. **Log in.**
@@ -55,7 +55,7 @@ If there is no "Advanced Settings" card or no "Local API" switch, the gateway's 
 Alternatively with `curl`, from any machine in the same network:
 
 ```shell
-gateway=192.168.1.20
+gateway=192.168.0.50
 password=1234abcd
 session=$(curl -s --insecure -H 'Content-Type: application/json' -d '{"password": "'"$password"'"}' https://$gateway/login | jq -r .session)
 curl --insecure -X PUT -H "X-session: $session" -H 'Content-Type: application/json' -d '{"enable": true}' https://$gateway/websocket_api
@@ -240,7 +240,7 @@ A device the gateway cannot reach over the radio is `OFFLINE` with a `COMMUNICAT
 ### `gardena.things`
 
 ```java
-Bridge gardenalocal:gateway:garden "GARDENA Gateway" [ host="192.168.1.20", password="1234abcd" ] {
+Bridge gardenalocal:gateway:garden "GARDENA Gateway" [ host="192.168.0.50", password="1234abcd" ] {
     Thing irrigation-control irrigation "Bewässerung"  [ deviceId="3034F8EE90126D400001737D", wateringDuration=20 ]
     Thing sensor             lawnSensor "Rasensensor"  [ deviceId="3034F8EE901267400000B333" ]
     Thing mower              mower      "Mähroboter"   [ deviceId="3034F8EE901EE84000003333", mowingDuration=2 ]
