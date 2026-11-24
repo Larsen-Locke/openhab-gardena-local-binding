@@ -28,13 +28,29 @@ The water controls and second-generation devices follow GARDENA's reference impl
 
 ## Preparing the Gateway
 
-The WebSocket service on the gateway has to be enabled once:
+The local API is switched off by default and has to be enabled once on the gateway's own configuration page.
+This is a page served by the gateway itself; the switch is not in the GARDENA app.
 
-1. Open the gateway's web interface, e.g. `https://GARDENA-123456.local` or `https://192.168.1.20`.
-   The browser warns about the gateway's self-signed certificate; accept it.
-2. Log in with the gateway's password: the first block of the gateway ID printed on the back of the gateway.
+1. **Find the gateway's address.**
+   The GARDENA app shows the IP address under "Garden Profile"; your router's device list has it as well.
+   The gateway also answers to its name, e.g. `GARDENA-123456.local`.
+2. **Open the page** in a browser on the same network, with `https://` in front: `https://192.168.1.20` or `https://GARDENA-123456.local`.
+   The browser warns that the connection is not private, because the gateway uses a self-signed certificate.
+   Continue anyway (Chrome/Edge: "Advanced", then "Proceed to ..."; Firefox: "Advanced...", then "Accept the Risk and Continue").
+3. **Log in.**
+   Only a password is asked for: the first block of the gateway ID printed on the back of the gateway.
    For the ID `1234abcd-996c-48f7-83dc-d2d1bac08e7e` the password is `1234abcd`.
-3. Open the advanced options behind the small grey arrow at the bottom of the page and enable the WebSocket API.
+   If you have changed the password on this page before, use your own.
+4. **Scroll all the way down**, past the time zone, Wi-Fi, password and "Apple HomeKit" cards, to the last card: "Advanced Settings" (German: "Erweiterte Einstellungen").
+   It is closed and shows only its title: click the small grey arrow at its right edge to open it.
+5. **Confirm the warning** that you continue at your own risk with "Continue" ("Weiter").
+   GARDENA warns here that changing advanced settings can affect the device's behavior and may void the warranty.
+6. **Switch on "Local API"** ("Lokale API") in the section "Connectivity" ("Konnektivität").
+   It is saved right away, there is no save button; the page reports "Local API enabled" ("Lokale API aktiviert").
+   Leave the "Cloud Connection" ("Cloud-Verbindung") switch below it on if you want to keep using the GARDENA app.
+
+The page appears in the language of your browser; names and layout may differ with other firmware versions of the gateway.
+If there is no "Advanced Settings" card or no "Local API" switch, the gateway's firmware may be too old.
 
 Alternatively with `curl`, from any machine in the same network:
 
@@ -280,7 +296,7 @@ end
 
 | Status                                                   | Meaning                                                                                 |
 |----------------------------------------------------------|-----------------------------------------------------------------------------------------|
-| "The gateway refused the connection"                     | The WebSocket API is not enabled; see [Preparing the Gateway](#preparing-the-gateway). It is off by default and its switch is hidden in the gateway's advanced options. |
+| "The gateway refused the connection"                     | The WebSocket API is not enabled; see [Preparing the Gateway](#preparing-the-gateway). It is off by default; the "Local API" switch is at the bottom of the gateway's page under "Advanced Settings". |
 | "The gateway rejected the password"                      | Wrong password; it is the first block of the gateway ID on the back of the gateway.    |
 | "Lost the connection to the gateway (...), retrying..."  | Network problem or gateway restart; the binding reconnects with a growing delay of 5 to 60 seconds. |
 
